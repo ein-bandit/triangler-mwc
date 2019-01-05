@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Web Mobile Control</title>
+    <meta name="description" content="Web Mobile Control">
+    <meta name="author" content="ein-bandit">
+    <style>
+    	body {
+    		background:url(bg.jpg);
+    		background-repeat: all;
+    	}
+    	.hidden {
+    		display: none;
+    	}
+    	#data {
+    		width: 200px;
+    		height: 200px;
+    		background: yellow;
+    	}
+    </style>
+</head>
+
+<body>
+	<div id="connect" class="connect">
+		<button onclick="initWebRTCConnection()">connect</button>
+	</div>
+	<div id='data' class="hidden">
+		<!-- put data here -->
+	</div>
+    <script src="adapter.js"></script>
+    <script src="webrtc.js"></script>
+    <script src="ice-services.js"></script>
+    <script src="mobile-web-control.js"></script>
+</body>
+
+</html>
