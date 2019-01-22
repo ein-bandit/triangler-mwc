@@ -12,20 +12,18 @@ const connectElement = document.getElementById('connect');
 
 function initWebRTCConnection() {
     //rtc_main.js
-    connect(serverAddress, setupChannelsAndListeners);
+    connect(serverAddress, setupDataChannelAndListeners);
 
     connectElement.classList.add('hidden');
     dataElement.classList.remove('hidden');
 }
 
 
-function setupChannelsAndListeners() {
+function setupDataChannelAndListeners() {
     console.log("services:", services.deviceorientation);
+    createLocalDataChannel();
     if (services.deviceorientation) {
-        createLocalDataChannel(services.deviceorientation);
-        setTimeout(function() {
-            addDeviceOrientationListener();
-        },2000);
+        addDeviceOrientationListener();
     }
 }
 
@@ -37,12 +35,12 @@ function addDeviceOrientationListener() {
             var beta = Math.floor(e.beta);
             var gamma = Math.floor(e.gamma);
 
-            deviceData = "".concat(alpha, ',', beta, ',', gamma);
+            deviceData = {x:alpha, y:beta, z:gamma};
 
-            console.log(channels[services.deviceorientation].readyState);
-            if (channels && channels[services.deviceorientation]) {
-                data.innerHTML = deviceData + " " + channels[services.deviceorientation].re;
-                channels[services.deviceorientation].send(deviceData);
+            data.innerHTML ='state: ' + dataChannel.readyState;
+            if (dataChannel && dataChannel.readyState === 'open') {
+                data.innerHTML = JSON.stringify(deviceData);
+                dataChannel.send(JSON.stringify({type:'accelerometer', data: deviceData}));
             }
         }, function(error) {
             errorElement.innerHTML = error;

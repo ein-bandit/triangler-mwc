@@ -14,7 +14,7 @@
     	.hidden {
     		display: none;
     	}
-    	#data {
+    	#data,#channel-data {
     		width: 200px;
     		height: 200px;
     		background: yellow;
@@ -26,9 +26,12 @@
 	<div id="connect" class="connect">
 		<button onclick="initWebRTCConnection()">connect</button>
 	</div>
-	<div id='data' class="hidden">
-		<!-- put data here -->
-	</div>
+    <br>
+    <div id='data' class="hidden">
+        <!-- put data here -->
+    </div>
+	<div id='channel-data'>
+    </div>
     <script src="adapter.js"></script>
     <script src="webrtc.js"></script>
     <script src="ice-services.js"></script>

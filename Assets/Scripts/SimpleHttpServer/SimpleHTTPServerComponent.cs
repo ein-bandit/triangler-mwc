@@ -10,6 +10,8 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 
+//geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
+
 public class SimpleHTTPServerComponent : MonoBehaviour
 {
     SimpleHTTPServer myServer;
@@ -35,16 +37,9 @@ public class SimpleHTTPServerComponent : MonoBehaviour
         myServer.Stop();
     }
 
-
     class SimpleHTTPServer
     {
-        private readonly string[] _indexFiles = {
-                                     "index.html",
-                                     "mobile-web-control.js",
-                                     "adapter.js",
-                                     "ice-services.js",
-                                     "webrtc.js"
-                             };
+        private readonly string[] _indexFiles = { "index.html" };
 
         private static IDictionary<string, string> _mimeTypeMappings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
                      {
