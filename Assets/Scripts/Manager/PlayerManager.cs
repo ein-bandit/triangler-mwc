@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using MobileWebControl;
+using MobileWebControl.NetworkData;
+using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,39 +13,37 @@ public class PlayerManager : MonoBehaviour
 
     public GameObject playerPrefab;
 
-    // Start is called before the first frame update
     void Start()
     {
-        DataEventManager.StartListening(DataEventType.Register_Player, RegisterPlayer);
-        DataEventManager.StartListening(DataEventType.Network_Input_Event, ReceivePlayerInput);
+        DataEventManager.StartListening(NetworkEventType.Register_Player, RegisterPlayer);
+        DataEventManager.StartListening(NetworkEventType.Unregister_Player, UnregisterPlayer);
+        DataEventManager.StartListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
     }
 
     private void OnDestroy()
     {
-        DataEventManager.StopListening(DataEventType.Register_Player, RegisterPlayer);
-        DataEventManager.StopListening(DataEventType.Network_Input_Event, ReceivePlayerInput);
-
+        DataEventManager.StopListening(NetworkEventType.Register_Player, RegisterPlayer);
+        DataEventManager.StopListening(NetworkEventType.Unregister_Player, UnregisterPlayer);
+        DataEventManager.StopListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
     }
 
-    void RegisterPlayer(object guid)
+    void RegisterPlayer(DataHolder playerInfo)
     {
-        Guid playerGuid = (Guid)guid;
+        Guid playerGuid = (Guid)playerInfo.data;
         GameObject player = Instantiate(playerPrefab);
         Player playerObj = player.GetComponent<Player>();
 
         players.Add(playerGuid, playerObj);
     }
 
-    void ReceivePlayerInput(object data)
+    void UnregisterPlayer(DataHolder playerInfo)
     {
-        PlayerInputData inputData = (PlayerInputData)data;
-
-        players[inputData.playerGuid].ReceiveInput(inputData.type, inputData.data);
+        Player playerObj = players[(Guid)playerInfo.data];
+        Destroy(playerObj.gameObject);
     }
 
-    // Update is called once per frame
-    void Update()
+    void ReceivePlayerInput(DataHolder data)
     {
-
+        players[data.receiver].ReceiveInput((InputDataType)data.type, data.data);
     }
 }

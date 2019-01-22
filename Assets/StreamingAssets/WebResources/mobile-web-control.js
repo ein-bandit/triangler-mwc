@@ -14,7 +14,7 @@ function initWebRTCConnection() {
     //rtc_main.js
     connect(serverAddress, setupDataChannelAndListeners);
 
-    connectElement.classList.add('hidden');
+    //connectElement.classList.add('hidden');
     dataElement.classList.remove('hidden');
 }
 

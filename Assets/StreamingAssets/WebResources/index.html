@@ -15,22 +15,41 @@
     		display: none;
     	}
     	#data,#channel-data {
-    		width: 200px;
+            width: 100%;
     		height: 200px;
+            margin: 20px;
     		background: yellow;
+            margin: 0 auto;
     	}
+        #connect {
+            margin-top: 33%;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        #connect button {
+            width: 50%;
+            font-size: 20px;
+        }
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-top: 50%;
+        }
     </style>
 </head>
 
 <body>
-	<div id="connect" class="connect">
-		<button onclick="initWebRTCConnection()">connect</button>
-	</div>
-    <br>
-    <div id='data' class="hidden">
-        <!-- put data here -->
-    </div>
-	<div id='channel-data'>
+    <div class="wrapper">
+    	<div id="connect" class="connect">
+    		<button onclick="initWebRTCConnection()">connect</button>
+    	</div>
+        <br>
+        <div id='data' class="hidden">
+            <!-- put data here -->
+        </div>
+    	<div id='channel-data'>
+        </div>
     </div>
     <script src="adapter.js"></script>
     <script src="webrtc.js"></script>

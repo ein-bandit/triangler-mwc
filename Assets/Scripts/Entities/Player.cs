@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 
 public class Player : MonoBehaviour

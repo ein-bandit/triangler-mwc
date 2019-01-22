@@ -1,42 +1,13 @@
-﻿using UnityEngine;
-using System.Collections;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using System.Net;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
-using System.Diagnostics;
 
-//geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
-
-public class SimpleHTTPServerComponent : MonoBehaviour
+namespace MobileWebControl.Webserver
 {
-    SimpleHTTPServer myServer;
-
-    private void Start()
-    {
-        StartServer();
-    }
-    public void StartServer()
-    {
-        UnityEngine.Debug.Log(Application.streamingAssetsPath);
-        myServer = new SimpleHTTPServer(Path.Combine(Application.streamingAssetsPath, "WebResources"), 8880);
-        //Application.OpenURL("http:/localhost:" + myServer.Port + "/" + FirstIndexPath);
-    }
-
-    public void StopServer()
-    {
-        Application.Quit();
-    }
-
-    void OnApplicationQuit()
-    {
-        myServer.Stop();
-    }
-
+    //geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
     class SimpleHTTPServer
     {
         private readonly string[] _indexFiles = { "index.html" };
@@ -170,7 +141,7 @@ public class SimpleHTTPServerComponent : MonoBehaviour
                 }
                 catch (Exception ex)
                 {
-                    print(ex);
+                    UnityEngine.Debug.Log(ex);
                 }
             }
         }
@@ -178,7 +149,7 @@ public class SimpleHTTPServerComponent : MonoBehaviour
         private void Process(HttpListenerContext context)
         {
             string filename = context.Request.Url.AbsolutePath;
-            print(filename);
+            //UnityEngine.Debug.Log(filename);
             filename = filename.Substring(1);
 
             if (string.IsNullOrEmpty(filename))
@@ -221,7 +192,7 @@ public class SimpleHTTPServerComponent : MonoBehaviour
                 catch (Exception ex)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    print(ex);
+                    UnityEngine.Debug.Log(ex);
                 }
 
             }
@@ -240,7 +211,5 @@ public class SimpleHTTPServerComponent : MonoBehaviour
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
         }
-
-
     }
 }
