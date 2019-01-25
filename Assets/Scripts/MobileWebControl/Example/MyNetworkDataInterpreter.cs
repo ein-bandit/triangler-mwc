@@ -7,15 +7,27 @@ using UnityEngine;
 //you can use your own enum types as well, just return the enum element.
 public class MyNetworkDataInterpreter : INetworkDataInterpreter
 {
+    private struct InputData
+    {
+        public Enum type;
+        public object data;
+
+        public InputData(Enum type, object data)
+        {
+            this.type = type;
+            this.data = data;
+        }
+    }
     public DataHolder InterpretByteData(Guid guid, byte[] bytes)
     {
-        InputDataHolder p = ParseAndDistributeData(guid, bytes);
+        //convert bytes to string.
+        InputData p = ParseAndDistributeData(bytes);
         return new DataHolder(guid, p.type, p.data);
     }
 
     public DataHolder InterpretStringData(Guid guid, string message)
     {
-        InputDataHolder p = ParseAndDistributeData(guid, message);
+        InputData p = ParseMessage(message);
         return new DataHolder(guid, p.type, p.data);
     }
 
@@ -32,39 +44,45 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
     }
 
     #region interpret-data
-    private InputDataHolder ParseAndDistributeData(Guid id, string message)
+    private InputData ParseMessage(string message)
     {
+        JsonData jsonMesssage = JsonMapper.ToObject(message);
+        System.Enum type = ParseMessageType(jsonMesssage["type"]);
 
-        JsonData parsedMessage = JsonMapper.ToObject(message);
-        InputDataType defaultType = InputDataType.invalid;
-        MySpecialInputData customType = MySpecialInputData.invalid;
+        object data = ParseMessageData(type, jsonMesssage["data"]);
 
-        object data = null;
-        bool success = Enum.TryParse(parsedMessage["type"].ToString(), out defaultType);
-
-        if (success)
-        {
-            data = ParseDataByType(defaultType, parsedMessage["data"]);
-            return new InputDataHolder(id, defaultType, data);
-        }
-        else
-        {
-            //either parse again:
-            //bool success = Enum.TryParse(parsedMessage["type"].ToString(), out customType);
-            Debug.Log("received invalid data type");
-            data = "this is a test";
-            customType = MySpecialInputData.text;
-            return new InputDataHolder(id, customType, data);
-        }
+        return new InputData(type, data);
     }
 
-    private InputDataHolder ParseAndDistributeData(Guid id, byte[] bytes)
+    private Enum ParseMessageType(JsonData type)
     {
-        return new InputDataHolder(id, InputDataType.invalid, null);
+        if (!type.IsString || type.Count == 0)
+        {
+            return InputDataType.invalid;
+        }
+
+        InputDataType defaultType;
+        if (Enum.TryParse(type.ToString(), out defaultType))
+        {
+            return defaultType;
+        }
+
+        MySpecialInputData customType;
+        if (Enum.TryParse(type.ToString(), out customType))
+        {
+            return customType;
+        }
+
+        return InputDataType.invalid;
     }
 
-    private object ParseDataByType(InputDataType type, JsonData data)
+    private object ParseMessageData(Enum type, JsonData data)
     {
+        if (!data.IsObject || data.Count == 0)
+        {
+            return null;
+        }
+
         switch (type)
         {
             case InputDataType.accelerometer:
@@ -74,6 +92,11 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
             default:
                 return null;
         }
+    }
+
+    private InputData ParseAndDistributeData(byte[] bytes)
+    {
+        return new InputData(InputDataType.invalid, null);
     }
 
     #endregion

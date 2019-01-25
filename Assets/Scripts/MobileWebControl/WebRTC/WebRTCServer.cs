@@ -273,16 +273,12 @@ namespace MobileWebControl.WebRTC
                                         {
                                             //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
                                             //find an appropriate condition to pass data or not. (parse as json and check fields?)
-                                            if (dmsg.Length >= 34)
-                                            {
-                                                OnReceiveDataMessage(context.ConnectionInfo.Id, dmsg);
-                                            }
+                                            OnReceiveDataMessage(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
                                         {
-                                            Trace.WriteLine($"OnDataBinaryMessage: {dmsg.Length}");
-                                            Console.WriteLine($"OnDataBinaryMessage: {dmsg.Length}");
+                                            OnReceiveBinaryDataMessage(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         // session.WebRtc.OnRenderRemote += delegate (IntPtr BGR24, uint w, uint h)
@@ -326,6 +322,10 @@ namespace MobileWebControl.WebRTC
 
         public delegate void OnCallbackReceivedDataMessage(Guid guid, string message);
         public event OnCallbackReceivedDataMessage OnReceiveDataMessage;
+
+        public delegate void OnCallbackReceivedBinaryDataMessage(Guid guid, byte[] message);
+        public event OnCallbackReceivedBinaryDataMessage OnReceiveBinaryDataMessage;
+
 
         public delegate void OnCallbackRegisterClient(Guid guid);
         public event OnCallbackRegisterClient OnRegisterClient;

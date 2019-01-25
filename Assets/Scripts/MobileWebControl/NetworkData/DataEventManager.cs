@@ -10,9 +10,7 @@ namespace MobileWebControl.NetworkData
     public class DataEventManager
     {
         //using a special unityevent inside manager.
-        private class DataHolderEvent : UnityEvent<DataHolder>
-        {
-        }
+        private class DataHolderEvent : UnityEvent<DataHolder> { }
 
         private Dictionary<NetworkEventType, DataHolderEvent> eventDictionary;
 
@@ -58,7 +56,6 @@ namespace MobileWebControl.NetworkData
 
         public static void StopListening(NetworkEventType eventType, UnityAction<DataHolder> listener)
         {
-            if (eventManager == null) return;
             DataHolderEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {

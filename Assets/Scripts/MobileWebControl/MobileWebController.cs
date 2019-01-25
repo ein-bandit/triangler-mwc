@@ -11,15 +11,12 @@ using System.IO;
 
 namespace MobileWebControl
 {
-    //put this script on a gameobject that is a singleton or has a class as singleton already.
+    //put this script on a gameobject that is a singleton ie. has a class as singleton already.
     public class MobileWebController : MonoBehaviour
     {
         private INetworkDataInterpreter interpreter;
 
         public string InterpreterClassName;
-
-        //holds temporarily received events (by other thread of webrtc) until update collects and distributes events.
-        private List<DataEventHolder> dataEvents;
 
         private WebRTCServer wss;
         public int webRTCPort = 1234;
@@ -29,8 +26,6 @@ namespace MobileWebControl
 
         void Awake()
         {
-
-
             webserver = new SimpleHTTPServer(Path.Combine(Application.streamingAssetsPath, "WebResources"), webserverPort);
             Debug.Log($"opened webserver on port {webserverPort}.");
             //Debug.Log($"serving files from: {Application.streamingAssetsPath}");
@@ -38,10 +33,9 @@ namespace MobileWebControl
             Debug.Log($"created websocket on port {webRTCPort}.");
 
             wss.OnReceiveDataMessage += OnReceiveData;
+            wss.OnReceiveBinaryDataMessage += OnReceiveBinaryData;
             wss.OnRegisterClient += OnRegisterClient;
             wss.OnUnregisterClient += OnUnregisterClient;
-
-            dataEvents = new List<DataEventHolder>();
 
             if (InterpreterClassName.Length == 0)
             {
@@ -54,27 +48,29 @@ namespace MobileWebControl
             }
         }
 
-        public void OnReceiveData(Guid guid, string msg)
+        public void OnReceiveData(Guid guid, string message)
         {
-            //UnityEngine.Debug.Log($"received data {guid},{msg}");
+            if (CheckRetrievedMessage(message))
+            {
+                //UnityEngine.Debug.Log($"received data {guid},{message}");
+                DataHolder data = interpreter.InterpretStringData(guid, message);
 
-            DataHolder data = interpreter.InterpretStringData(guid, msg);
-
-            DataEventHolder dataEvent =
-            new DataEventHolder(NetworkEventType.Network_Input_Event, data);
-
-            dataEvents.Add(dataEvent);
+                DataEventManager.TriggerEvent(NetworkEventType.Network_Input_Event, data);
+            }
         }
+
+        public void OnReceiveBinaryData(Guid guid, byte[] message)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public void OnRegisterClient(Guid guid)
         {
             Debug.Log("received a new player: " + guid);
             DataHolder data = interpreter.RegisterClient(guid);
 
-            DataEventHolder dataEvent =
-                new DataEventHolder(NetworkEventType.Register_Player, data);
-
-            dataEvents.Add(dataEvent);
+            DataEventManager.TriggerEvent(NetworkEventType.Register_Player, data);
         }
 
         public void OnUnregisterClient(Guid guid)
@@ -82,35 +78,24 @@ namespace MobileWebControl
             Debug.Log("unregister player: " + guid);
             DataHolder data = interpreter.UnregisterClient(guid);
 
-            DataEventHolder dataEvent =
-                new DataEventHolder(NetworkEventType.Unregister_Player, data);
-
-            dataEvents.Add(dataEvent);
+            DataEventManager.TriggerEvent(NetworkEventType.Unregister_Player, data);
         }
 
-        //use update over fixedupdate to send data as soon as possible.
-        //TODO: consider sending data instantly on receive (instead of update) and use update to set data in event receiver directly.
-        void Update()
+        private bool CheckRetrievedMessage(string message)
         {
-            if (dataEvents.Count > 0)
+            if (message == null || message.Length < 19)
             {
-                List<DataEventHolder> copiedList = new List<DataEventHolder>(dataEvents);
-                dataEvents.Clear();
-
-                Debug.Log($"resending {copiedList.Count} events");
-                foreach (DataEventHolder data in copiedList)
-                {
-                    DataEventManager.TriggerEvent(data.type, data.data);
-                }
+                Debug.Log("failed check for message syntax. ignored received event.");
+                return false;
             }
+            return true;
         }
 
         private void OnApplicationQuit()
         {
             Debug.Log("quitting");
             wss.Dispose();
+            webserver.Stop();
         }
-
-
     }
 }
