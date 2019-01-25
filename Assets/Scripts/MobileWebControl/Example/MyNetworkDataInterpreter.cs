@@ -68,9 +68,9 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
         switch (type)
         {
             case InputDataType.accelerometer:
-                return new Vector3(float.Parse(data["x"].ToString()),
-                                    float.Parse(data["y"].ToString()),
-                                    float.Parse(data["z"].ToString()));
+                return new Vector3(float.Parse(data["a"].ToString()) * -1,
+                                    float.Parse(data["b"].ToString()) * -1,
+                                    float.Parse(data["c"].ToString()));
             default:
                 return null;
         }

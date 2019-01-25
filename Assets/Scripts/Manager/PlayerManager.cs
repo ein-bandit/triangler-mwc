@@ -34,6 +34,10 @@ public class PlayerManager : MonoBehaviour
         Player playerObj = player.GetComponent<Player>();
 
         players.Add(playerGuid, playerObj);
+
+        Camera.main.transform.parent = player.transform;
+        Camera.main.transform.rotation = Quaternion.Euler(Camera.main.transform.rotation.x, Camera.main.transform.rotation.y, 180f);
+        Camera.main.transform.position = new Vector3(0, -3, -5);
     }
 
     void UnregisterPlayer(DataHolder playerInfo)

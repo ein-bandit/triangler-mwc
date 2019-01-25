@@ -14,7 +14,7 @@ function initWebRTCConnection() {
     //rtc_main.js
     connect(serverAddress, setupDataChannelAndListeners);
 
-    //connectElement.classList.add('hidden');
+    connectElement.classList.add('hidden');
     dataElement.classList.remove('hidden');
 }
 
@@ -35,7 +35,7 @@ function addDeviceOrientationListener() {
             var beta = Math.floor(e.beta);
             var gamma = Math.floor(e.gamma);
 
-            deviceData = {x:alpha, y:beta, z:gamma};
+            deviceData = {a:alpha, b:beta, c:gamma};
 
             data.innerHTML ='state: ' + dataChannel.readyState;
             if (dataChannel && dataChannel.readyState === 'open') {
