@@ -320,17 +320,17 @@ namespace MobileWebControl.WebRTC
             }
         }
 
-        public delegate void OnCallbackReceivedDataMessage(Guid guid, string message);
+        public delegate void OnCallbackReceivedDataMessage(IComparable identifier, string message);
         public event OnCallbackReceivedDataMessage OnReceiveDataMessage;
 
-        public delegate void OnCallbackReceivedBinaryDataMessage(Guid guid, byte[] message);
+        public delegate void OnCallbackReceivedBinaryDataMessage(IComparable identifier, byte[] message);
         public event OnCallbackReceivedBinaryDataMessage OnReceiveBinaryDataMessage;
 
 
-        public delegate void OnCallbackRegisterClient(Guid guid);
+        public delegate void OnCallbackRegisterClient(IComparable identifier);
         public event OnCallbackRegisterClient OnRegisterClient;
 
-        public delegate void OnCallbackUnregisterClient(Guid guid);
+        public delegate void OnCallbackUnregisterClient(IComparable identifier);
         public event OnCallbackUnregisterClient OnUnregisterClient;
 
 

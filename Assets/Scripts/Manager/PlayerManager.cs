@@ -48,6 +48,6 @@ public class PlayerManager : MonoBehaviour
 
     void ReceivePlayerInput(DataHolder data)
     {
-        players[data.receiver].ReceiveInput((InputDataType)data.type, data.data);
+        players[(Guid)data.identifier].ReceiveInput((InputDataType)data.type, data.data);
     }
 }

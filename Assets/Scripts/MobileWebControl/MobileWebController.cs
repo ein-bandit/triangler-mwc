@@ -48,35 +48,35 @@ namespace MobileWebControl
             }
         }
 
-        public void OnReceiveData(Guid guid, string message)
+        public void OnReceiveData(IComparable identifier, string message)
         {
             if (CheckRetrievedMessage(message))
             {
-                //UnityEngine.Debug.Log($"received data {guid},{message}");
-                DataHolder data = interpreter.InterpretStringData(guid, message);
+                //UnityEngine.Debug.Log($"received data {identifier},{message}");
+                DataHolder data = interpreter.InterpretStringData(identifier, message);
 
                 DataEventManager.TriggerEvent(NetworkEventType.Network_Input_Event, data);
             }
         }
 
-        public void OnReceiveBinaryData(Guid guid, byte[] message)
+        public void OnReceiveBinaryData(IComparable identifier, byte[] message)
         {
             throw new NotImplementedException();
         }
 
 
-        public void OnRegisterClient(Guid guid)
+        public void OnRegisterClient(IComparable identifier)
         {
-            Debug.Log("received a new player: " + guid);
-            DataHolder data = interpreter.RegisterClient(guid);
+            Debug.Log("received a new player: " + identifier);
+            DataHolder data = interpreter.RegisterClient(identifier);
 
             DataEventManager.TriggerEvent(NetworkEventType.Register_Player, data);
         }
 
-        public void OnUnregisterClient(Guid guid)
+        public void OnUnregisterClient(IComparable identifier)
         {
-            Debug.Log("unregister player: " + guid);
-            DataHolder data = interpreter.UnregisterClient(guid);
+            Debug.Log("unregister player: " + identifier);
+            DataHolder data = interpreter.UnregisterClient(identifier);
 
             DataEventManager.TriggerEvent(NetworkEventType.Unregister_Player, data);
         }

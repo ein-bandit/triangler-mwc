@@ -5,6 +5,7 @@ using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 
 //you can use your own enum types as well, just return the enum element.
+//identifier is Guid for this example (given by library)
 public class MyNetworkDataInterpreter : INetworkDataInterpreter
 {
     private struct InputData
@@ -18,29 +19,29 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
             this.data = data;
         }
     }
-    public DataHolder InterpretByteData(Guid guid, byte[] bytes)
+    public DataHolder InterpretByteData(IComparable identifier, byte[] bytes)
     {
         //convert bytes to string.
         InputData p = ParseAndDistributeData(bytes);
-        return new DataHolder(guid, p.type, p.data);
+        return new DataHolder(identifier, p.type, p.data);
     }
 
-    public DataHolder InterpretStringData(Guid guid, string message)
+    public DataHolder InterpretStringData(IComparable identifier, string message)
     {
         InputData p = ParseMessage(message);
-        return new DataHolder(guid, p.type, p.data);
+        return new DataHolder(identifier, p.type, p.data);
     }
 
-    public DataHolder RegisterClient(Guid guid)
+    public DataHolder RegisterClient(IComparable identifier)
     {
         //with type register and guid as data.
-        return new DataHolder(guid, InputDataType.register_player, guid);
+        return new DataHolder(identifier, InputDataType.register_player, identifier);
     }
 
-    public DataHolder UnregisterClient(Guid guid)
+    public DataHolder UnregisterClient(IComparable identifier)
     {
         //with type unregister and guid as data.
-        return new DataHolder(guid, InputDataType.unregister_player, guid);
+        return new DataHolder(identifier, InputDataType.unregister_player, identifier);
     }
 
     #region interpret-data

@@ -4,15 +4,15 @@ namespace MobileWebControl.NetworkData
 {
     public class DataHolder
     {
-        public Guid receiver;
+        public IComparable identifier;
 
         public System.Enum type;
 
         public object data;
 
-        public DataHolder(Guid receiver, System.Enum type, object data)
+        public DataHolder(IComparable identifier, System.Enum type, object data)
         {
-            this.receiver = receiver;
+            this.identifier = identifier;
             this.type = type;
             this.data = data;
         }

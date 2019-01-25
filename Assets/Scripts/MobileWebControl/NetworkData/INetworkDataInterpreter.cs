@@ -2,13 +2,14 @@ using System;
 
 namespace MobileWebControl.NetworkData
 {
+    //identifier (usually guid, but can be any comparable type)
     public interface INetworkDataInterpreter
     {
-        DataHolder InterpretStringData(Guid guid, string msg);
-        DataHolder InterpretByteData(Guid guid, byte[] bytes);
+        DataHolder InterpretStringData(IComparable identifier, string msg);
+        DataHolder InterpretByteData(IComparable identifier, byte[] bytes);
 
-        DataHolder RegisterClient(Guid guid);
-        DataHolder UnregisterClient(Guid guid);
+        DataHolder RegisterClient(IComparable identifier);
+        DataHolder UnregisterClient(IComparable identifier);
 
     }
 }
