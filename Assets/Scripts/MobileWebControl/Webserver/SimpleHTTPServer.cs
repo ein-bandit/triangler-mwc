@@ -123,8 +123,8 @@ namespace MobileWebControl.Webserver
         /// </summary>
         public void Stop()
         {
-            _serverThread.Abort();
             _listener.Stop();
+            _serverThread.Abort();
         }
 
         private void Listen()
@@ -210,6 +210,10 @@ namespace MobileWebControl.Webserver
             this._port = port;
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
+            // UnityToolbag.Dispatcher.InvokeAsync(() =>
+            // {
+            //     UnityEngine.Debug.Log("asdf: " + _serverThread.ManagedThreadId);
+            // });
         }
     }
 }

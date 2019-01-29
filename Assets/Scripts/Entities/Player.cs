@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
         {
             speed -= speedStep;
         }
-        Debug.Log($"new speed {speed}");
+        //Debug.Log($"new speed {speed}");
         transform.position = Vector3.Lerp(transform.position, transform.position + (Vector3.forward * speed) + (Vector3.left * steeringAngle * 0.1f), Time.deltaTime);
     }
 

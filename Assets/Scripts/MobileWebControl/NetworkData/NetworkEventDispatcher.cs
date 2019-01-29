@@ -4,25 +4,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using MobileWebControl.NetworkData;
+using UnityToolbag;
 
 namespace MobileWebControl.NetworkData
 {
-    public class DataEventManager
+    public class NetworkEventDispatcher
     {
+        //Runs on the Network Thread and collects events from 
+        //using Dispatcher.cs to wait for Unity Main Thread to execute Update. 
         //using a special unityevent inside manager.
-        private class DataHolderEvent : UnityEvent<DataHolder> { }
+        private class AsyncRetrievedEvent : UnityEvent<DataHolder> { }
 
-        private Dictionary<NetworkEventType, DataHolderEvent> eventDictionary;
+        private Dictionary<NetworkEventType, AsyncRetrievedEvent> eventDictionary;
 
-        private static DataEventManager eventManager;
+        private static NetworkEventDispatcher eventManager;
 
-        public static DataEventManager instance
+        public static NetworkEventDispatcher instance
         {
             get
             {
                 if (eventManager == null)
                 {
-                    eventManager = new DataEventManager();
+                    eventManager = new NetworkEventDispatcher();
 
                     eventManager.Init();
                 }
@@ -35,20 +38,20 @@ namespace MobileWebControl.NetworkData
         {
             if (eventDictionary == null)
             {
-                eventDictionary = new Dictionary<NetworkEventType, DataHolderEvent>();
+                eventDictionary = new Dictionary<NetworkEventType, AsyncRetrievedEvent>();
             }
         }
 
         public static void StartListening(NetworkEventType eventType, UnityAction<DataHolder> listener)
         {
-            DataHolderEvent thisEvent = null;
+            AsyncRetrievedEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
                 thisEvent.AddListener(listener);
             }
             else
             {
-                thisEvent = new DataHolderEvent();
+                thisEvent = new AsyncRetrievedEvent();
                 thisEvent.AddListener(listener);
                 instance.eventDictionary.Add(eventType, thisEvent);
             }
@@ -56,19 +59,26 @@ namespace MobileWebControl.NetworkData
 
         public static void StopListening(NetworkEventType eventType, UnityAction<DataHolder> listener)
         {
-            DataHolderEvent thisEvent = null;
+            AsyncRetrievedEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
                 thisEvent.RemoveListener(listener);
             }
         }
 
+        //trigger event is called from another thread when data is received.
+        //with the dispatcher triggerEvent waits for unity to be ready and sends event immediately.
         public static void TriggerEvent(NetworkEventType eventType, DataHolder data)
         {
-            DataHolderEvent thisEvent = null;
+            AsyncRetrievedEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
-                thisEvent.Invoke(data);
+                int threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                Dispatcher.InvokeAsync(() =>
+                {
+                    Debug.Log($"calling event on unity thread, from {threadId}");
+                    thisEvent.Invoke(data);
+                });
             }
         }
     }
