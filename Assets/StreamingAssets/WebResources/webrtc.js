@@ -69,6 +69,8 @@ function connect(serverAddress, dataChannelSetupCallback) {
   };
 
   socket.onclose = function() {
+    connecting = false;
+
     console.log("Socket connection has been disconnected!");
 
     for (channel in channels) {

@@ -35,7 +35,12 @@ body {
   padding: 10px 20px;
   border-radius: 5px;
   font-size: 2em;
+  transition: background-color 0.25s;
 }
+.connect-area .connect-btn.tapped {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
 .tapable-area {
   position: absolute;
   top: 25px;
@@ -52,10 +57,13 @@ body {
   justify-content: center;
 
   margin: 0 auto;
+
+  transition: background-color 0.25s;
 }
 .tapable-area span {
   font-size: 2em;
   color: white;
+  pointer-events: none;
 }
 
 .tapable-area.tap-area-1 {
@@ -65,6 +73,10 @@ body {
 .tapable-area.tap-area-2 {
   top: 50%;
   margin-top: 5px;
+}
+
+.tapable-area.tapped {
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 #feature-area {

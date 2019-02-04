@@ -11,7 +11,11 @@ var features = {
       for (var areaIndex in config.tapDetection.areas) {
         var id = config.tapDetection.areas[areaIndex];
         if ((tapArea = document.getElementById(id)) !== null) {
-          tapArea.addEventListener("click", function() {
+          tapArea.addEventListener("click", function(evt) {
+            evt.target.classList.add("tapped");
+            setTimeout(() => {
+              evt.target.classList.remove("tapped");
+            }, 250);
             sendFunc({ type: "tap", data: id });
           });
         }

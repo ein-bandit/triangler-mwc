@@ -5,15 +5,22 @@ const sendMode = "string"; //"byte"
 
 const errorElement = document.getElementById("error");
 const dataElement = document.getElementById("data");
-const connectElement = document.getElementById("connect");
 const contentElement = document.getElementById("content");
+const connectElement = document.getElementById("connect");
+var connectBtn = connectElement.getElementsByClassName("connect-btn")[0];
+
+var connecting = false;
 
 function connectClient() {
   //rtc_main.js
-  connect(
-    serverAddress,
-    setupDataChannelAndListeners
-  );
+  connectTapAnimation();
+  if (!connecting) {
+    connecting = true;
+    connect(
+      serverAddress,
+      setupDataChannelAndListeners
+    );
+  }
 }
 
 function updateScene(mode) {
@@ -25,6 +32,7 @@ function updateScene(mode) {
       dataElement.classList.remove("hidden");
     }
   } else if (mode === "connect") {
+    connecting = false; //disconnect occurred.
     connectElement.classList.remove("hidden");
     contentElement.classList.add("hidden");
 
@@ -66,4 +74,11 @@ function removeListeners() {
   enabledFeatures.forEach(featureName => {
     //find a way to remove listener.
   });
+}
+
+function connectTapAnimation() {
+  connectBtn.classList.add("tapped");
+  setTimeout(() => {
+    connectBtn.classList.remove("tapped");
+  }, 250);
 }
