@@ -1,13 +1,7 @@
 const serverPort = "1234";
 const serverAddress = window.location.hostname + ":" + serverPort;
 
-var services = {
-  deviceorientation: { enabled: false },
-  tapDetection: { enabled: true, id: "tap-area" },
-  ambientLight: { enabled: false },
-  deviceProximity: { enabled: true },
-  deviceMotion: { enabled: true }
-};
+const sendMode = "string"; //"byte"
 
 const errorElement = document.getElementById("error");
 const dataElement = document.getElementById("data");
@@ -25,110 +19,36 @@ function initWebRTCConnection() {
 }
 
 function setupDataChannelAndListeners() {
-  console.log("services:", services.deviceorientation);
   createLocalDataChannel();
 
-  if (services.deviceorientation.enabled) {
-    addDeviceOrientationListener();
-  }
-  if (services.tapDetection.enabled) {
-    addTapDetectionListener();
-  }
-  if (services.ambientLight.enabled) {
-    addAmbientLightListener();
-  }
-  if (services.deviceProximity.enabled) {
-    addDeviceProximityListener();
-  }
-  if (services.deviceMotion.enabled) {
-    addDeviceMotionListener();
-  }
-}
-
-function addDeviceOrientationListener() {
-  if (window.DeviceOrientationEvent) {
-    window.addEventListener(
-      "deviceorientation",
-      function(evt) {
-        var alpha = Math.floor(evt.alpha);
-        var beta = Math.floor(evt.beta);
-        var gamma = Math.floor(evt.gamma);
-
-        deviceData = { a: alpha, b: beta, c: gamma };
-
-        dataElement.innerHTML = "state: " + dataChannel.readyState;
-        if (dataChannel && dataChannel.readyState === "open") {
-          dataElement.innerHTML = JSON.stringify(deviceData);
-          dataChannel.send(
-            JSON.stringify({ type: "accelerometer", data: deviceData })
-          );
-        }
-      },
-      function(error) {
-        errorElement.innerHTML = error;
+  //setup listeners for enabled features.
+  enabledFeatures.forEach(featureName => {
+    //TODO: reaftor to dataChannels["all"] ??
+    features[featureName].listener(function(data) {
+      if (debug) {
+        console.log("sending: " + data.type, data);
+        dataElement.innerHTML = JSON.stringify(data);
       }
-    );
-  }
-}
 
-function addTapDetectionListener() {
-  var tapArea = document.getElementById(services.tapDetection.id);
-  tapArea.addEventListener("click", function(evt) {
-    console.log("sending tap");
-    if (navigator && navigator.vibrate) {
-      navigator.vibrate(1000);
-    }
-    dataChannel.send(
-      JSON.stringify({ type: "tap", data: services.tapDetection.id })
-    );
+      //TODO: if your webrtc library supports multiple dataChannels use it for each data type.
+
+      if (sendMode === "byte") {
+        dataChannel.send(convertToBytes(data));
+      } else {
+        dataChannel.send(JSON.stringify(data));
+      }
+    });
   });
 }
 
-function addAmbientLightListener() {
-  dataElement.innerHTML +=
-    "devicelight: " +
-    ("ondevicelight" in window) +
-    " lightlevel: " +
-    ("onlightlevel" in window);
-  window.addEventListener("devicelight", function(evt) {
-    dataElement.innerHTML = evt.value;
+function convertToBytes(data) {
+  //convert object to byte[];
+  return data.tobyte;
+}
+
+//TODO: implement on connection close.
+function removeListeners() {
+  enabledFeatures.forEach(featureName => {
+    //find a way to remove listener.
   });
-}
-
-function addDeviceProximityListener() {
-  dataElement.innerHTML +=
-    "prox: " +
-    ("ondeviceproximity" in window) +
-    " user: " +
-    ("onuserproximity" in window);
-
-  if ("ondeviceproximity" in window) {
-    window.addEventListener("deviceproximity", function(evt) {
-      dataElement.innerHTML =
-        "proximity:" + JSON.stringify(evt) + ", " + JSON.stringify(evt.value);
-      //dataElement.innerHTML = evt.value;
-      dataChannel.send(
-        JSON.stringify({ type: "proximity", data: evt.value > 0 })
-      );
-    });
-  }
-}
-
-function addDeviceMotionListener() {
-  dataElement.innerHTML += "motion: " + ("ondevicemotion" in window);
-  if ("ondevicemotion" in window) {
-    window.addEventListener("devicemotion", function(evt) {
-      //if (evt.acceleration.x > 0.5 || evt.acceleration.y > 0.5 || evt.acceleration.z > 0.5) {
-      if (evt.rotationRate.alpha > 30) {
-        dataElement.innerHTML =
-          "motion:" +
-          JSON.stringify(evt) +
-          ", " +
-          JSON.stringify({ x: evt.rotationRate.alpha });
-      }
-      //}
-      //dataElement.innerHTML = evt.value;
-      //dataChannel.send(JSON.stringify({type:'proximity', data: evt.value > 0}));
-    });
-  }
 }
