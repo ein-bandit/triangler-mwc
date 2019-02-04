@@ -61,11 +61,9 @@ body {
 .tapable-area.tap-area-1 {
   bottom: 50%;
   margin-bottom: 5px;
-  top: 20px;
 }
 .tapable-area.tap-area-2 {
   top: 50%;
-  bottom: 35px;
   margin-top: 5px;
 }
 
