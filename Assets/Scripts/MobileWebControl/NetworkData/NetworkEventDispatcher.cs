@@ -13,9 +13,9 @@ namespace MobileWebControl.NetworkData
         //Runs on the Network Thread and collects events from 
         //using Dispatcher.cs to wait for Unity Main Thread to execute Update. 
         //using a special unityevent inside manager.
-        private class AsyncRetrievedEvent : UnityEvent<DataHolder> { }
+        private class AsyncEvent : UnityEvent<DataHolder> { }
 
-        private Dictionary<NetworkEventType, AsyncRetrievedEvent> eventDictionary;
+        private Dictionary<NetworkEventType, AsyncEvent> eventDictionary;
 
         private static NetworkEventDispatcher eventManager;
 
@@ -38,20 +38,20 @@ namespace MobileWebControl.NetworkData
         {
             if (eventDictionary == null)
             {
-                eventDictionary = new Dictionary<NetworkEventType, AsyncRetrievedEvent>();
+                eventDictionary = new Dictionary<NetworkEventType, AsyncEvent>();
             }
         }
 
         public static void StartListening(NetworkEventType eventType, UnityAction<DataHolder> listener)
         {
-            AsyncRetrievedEvent thisEvent = null;
+            AsyncEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
                 thisEvent.AddListener(listener);
             }
             else
             {
-                thisEvent = new AsyncRetrievedEvent();
+                thisEvent = new AsyncEvent();
                 thisEvent.AddListener(listener);
                 instance.eventDictionary.Add(eventType, thisEvent);
             }
@@ -59,7 +59,7 @@ namespace MobileWebControl.NetworkData
 
         public static void StopListening(NetworkEventType eventType, UnityAction<DataHolder> listener)
         {
-            AsyncRetrievedEvent thisEvent = null;
+            AsyncEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
                 thisEvent.RemoveListener(listener);
@@ -70,13 +70,11 @@ namespace MobileWebControl.NetworkData
         //with the dispatcher triggerEvent waits for unity to be ready and sends event immediately.
         public static void TriggerEvent(NetworkEventType eventType, DataHolder data)
         {
-            AsyncRetrievedEvent thisEvent = null;
+            AsyncEvent thisEvent = null;
             if (instance.eventDictionary.TryGetValue(eventType, out thisEvent))
             {
-                int threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
                 Dispatcher.InvokeAsync(() =>
                 {
-                    Debug.Log($"calling event on unity thread, from {threadId}");
                     thisEvent.Invoke(data);
                 });
             }

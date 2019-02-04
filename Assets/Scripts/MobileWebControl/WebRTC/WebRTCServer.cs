@@ -173,11 +173,6 @@ namespace MobileWebControl.WebRTC
         private void OnReceive(IWebSocketConnection context, string msg)
         {
             //UnityEngine.Debug.Log($"OnReceive {context.ConnectionInfo.Id}: {msg}");
-            int threadId = Thread.CurrentThread.ManagedThreadId;
-            // Dispatcher.InvokeAsync(() =>
-            // {
-            //     UnityEngine.Debug.Log($"onreceive websocket {threadId}");
-            // });
             if (!msg.Contains("command")) return;
 
             if (UserList.ContainsKey(context.ConnectionInfo.Id))
@@ -198,11 +193,6 @@ namespace MobileWebControl.WebRTC
                                 }
                                 else
                                 {
-                                    // int threadId2 = Thread.CurrentThread.ManagedThreadId;
-                                    // Dispatcher.InvokeAsync(() =>
-                                    // {
-                                    //     UnityEngine.Debug.Log($"register player {threadId2}");
-                                    // });
                                     OnRegisterClient(context.ConnectionInfo.Id);
                                 }
 
@@ -283,15 +273,8 @@ namespace MobileWebControl.WebRTC
 
                                         session.WebRtc.OnDataMessage += delegate (string dmsg)
                                         {
-                                            // int threadId3 = Thread.CurrentThread.ManagedThreadId;
-                                            // Dispatcher.InvokeAsync(() =>
-                                            // {
-                                            //     UnityEngine.Debug.Log($"onDataMessage webrtc {threadId3}");
-                                            // });
                                             //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
-                                            //find an appropriate condition to pass data or not. (parse as json and check fields?)
                                             OnReceiveDataMessage(context.ConnectionInfo.Id, dmsg);
-
                                         };
 
                                         session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)

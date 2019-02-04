@@ -44,7 +44,6 @@ public class PlayerManager : MonoBehaviour
 
     void ReceivePlayerInput(DataHolder data)
     {
-        //Debug.Log($"received input {Time.realtimeSinceStartup}");
         players[(Guid)data.identifier].ReceiveInput((InputDataType)data.type, data.data);
     }
 }

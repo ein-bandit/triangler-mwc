@@ -5,11 +5,13 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float speedStep = 100f;
+    public float speedStep = 2f;
     private float speed = 0f;
     private float steeringAngle = 0f;
 
     private Rigidbody _rigidbody;
+
+    private Material _material;
 
     private void Awake()
     {
@@ -21,6 +23,7 @@ public class Player : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.isKinematic = true;
+        _material = GetComponent<Renderer>().material;
     }
 
     // Update is called once per frame
@@ -35,7 +38,7 @@ public class Player : MonoBehaviour
             speed -= speedStep;
         }
         //Debug.Log($"new speed {speed}");
-        transform.position = Vector3.Lerp(transform.position, transform.position + (Vector3.forward * speed) + (Vector3.left * steeringAngle * 0.1f), Time.deltaTime);
+        //transform.position = Vector3.Lerp(transform.position, transform.position + (Vector3.left * speed) + (Vector3.back * steeringAngle * 0.1f), Time.deltaTime);
     }
 
     public void StartMoving()
@@ -45,7 +48,7 @@ public class Player : MonoBehaviour
 
     public void ReceiveInput(InputDataType type, object inputData)
     {
-        Debug.Log("received input in player");
+        Debug.Log($"received input in player: {type},{inputData}");
         switch (type)
         {
             case InputDataType.accelerometer:
@@ -58,16 +61,35 @@ public class Player : MonoBehaviour
 
                 //add or reduce speed with y (a).
                 //should be -1 to 1 now.
-                float multiplier = deviceOrientation.y / 180;
-                speed += speedStep * multiplier;
-                if (speed < 0)
-                {
-                    speed = 0;
-                }
+                // float multiplier = deviceOrientation.y / 180;
+                // speed += speedStep * multiplier;
+                // if (speed < 0)
+                // {
+                //     speed = 0;
+                // }
+                // else if (speed > 5)
+                // {
+                //     speed = 10;
+                // }
                 //roll x (b) is not needed by now.
+                break;
+            case InputDataType.tap:
+                _material.color = Color.red;
+                Invoke("ResetMaterialColor", 1f);
+                break;
+            case InputDataType.proximity:
+                if ((bool)inputData == true)
+                {
+                    _material.color = Color.green;
+                    Invoke("ResetMaterialColor", 1f);
+                }
                 break;
             default:
                 break;
         }
+    }
+    private void ResetMaterialColor()
+    {
+        _material.color = Color.blue;
     }
 }

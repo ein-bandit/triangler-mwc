@@ -30,12 +30,6 @@ namespace MobileWebControl
         private SimpleHTTPServer webserver;
         public int webserverPort = 8880;
 
-        //TODO: implement last event remembering mechanism
-        public bool sendLastEvent = false;
-
-        //temporary event store. holds events until unitys th
-        private Dictionary<NetworkEventType, DataHolder> tempEventStore;
-
         private NetworkEventDispatcher networkEventDispatcher;
 
         void Awake()
@@ -46,7 +40,6 @@ namespace MobileWebControl
 
             webRTCServer = new WebRTCServer(webRTCPort);
             Debug.Log($"created websocket on port {webRTCPort}.");
-
 
             //handler methods get called from another thread.
             webRTCServer.OnReceiveDataMessage += OnReceiveData;

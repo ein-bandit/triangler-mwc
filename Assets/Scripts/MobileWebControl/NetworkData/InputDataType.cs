@@ -8,15 +8,17 @@ namespace MobileWebControl.NetworkData.InputData
     {
         accelerometer,
         lightsensor,
+        proximity,
+        tap,
+
+        register,
+        unregister,
+
+        invalid,
+
+        //maybe added later
         camera,
-        microfon,
-        button_click,
-        text,
-
-        register_player,
-        unregister_player,
-
-        invalid
+        microfon
     }
 
 }
