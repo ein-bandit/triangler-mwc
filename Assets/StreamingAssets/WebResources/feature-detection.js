@@ -8,10 +8,14 @@ var features = {
     available: true,
     message: "on screen actions enabled",
     listener: function(sendFunc) {
-      var tapArea = document.getElementById(config.tapDetection.id);
-      tapArea.addEventListener("click", function(evt) {
-        sendFunc({ type: "tap", data: config.tapDetection.id });
-      });
+      for (var areaIndex in config.tapDetection.areas) {
+        var id = config.tapDetection.areas[areaIndex];
+        if ((tapArea = document.getElementById(id)) !== null) {
+          tapArea.addEventListener("click", function() {
+            sendFunc({ type: "tap", data: id });
+          });
+        }
+      }
     }
   },
   vibrate: {
