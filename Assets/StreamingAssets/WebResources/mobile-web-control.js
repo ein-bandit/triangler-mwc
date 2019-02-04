@@ -6,19 +6,35 @@ const sendMode = "string"; //"byte"
 const errorElement = document.getElementById("error");
 const dataElement = document.getElementById("data");
 const connectElement = document.getElementById("connect");
+const contentElement = document.getElementById("content");
 
-function initWebRTCConnection() {
+function connectClient() {
   //rtc_main.js
   connect(
     serverAddress,
     setupDataChannelAndListeners
   );
-
-  connectElement.classList.add("hidden");
-  dataElement.classList.remove("hidden");
 }
 
+function updateScene(mode) {
+  if (mode === "game") {
+    connectElement.classList.add("hidden");
+    contentElement.classList.remove("hidden");
+
+    if (debug) {
+      dataElement.classList.remove("hidden");
+    }
+  } else if (mode === "connect") {
+    connectElement.classList.remove("hidden");
+    contentElement.classList.add("hidden");
+
+    if (debug) {
+      dataElement.classList.add("hidden");
+    }
+  }
+}
 function setupDataChannelAndListeners() {
+  updateScene("game");
   createLocalDataChannel();
 
   //setup listeners for enabled features.
@@ -43,10 +59,9 @@ function setupDataChannelAndListeners() {
 
 function convertToBytes(data) {
   //convert object to byte[];
-  return data.tobyte;
+  return data.toByteArray();
 }
 
-//TODO: implement on connection close.
 function removeListeners() {
   enabledFeatures.forEach(featureName => {
     //find a way to remove listener.

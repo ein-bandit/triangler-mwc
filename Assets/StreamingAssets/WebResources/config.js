@@ -1,7 +1,7 @@
 //define which browser apis should be enabled and used to stream data.
 
 const config = {
-  tapDetection: { enabled: true, areas: ["tap-area"] },
+  tapDetection: { enabled: true, areas: ["tap-area-1", "tap-area-2"] },
   vibrate: { enabled: true },
   deviceOrientation: { enabled: false },
   deviceProximity: { enabled: true },
@@ -9,4 +9,4 @@ const config = {
   ambientLight: { enabled: false }
 };
 
-const debug = true;
+const debug = false;

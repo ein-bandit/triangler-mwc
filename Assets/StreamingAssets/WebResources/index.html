@@ -5,6 +5,7 @@
     <title>Web Mobile Control</title>
     <meta name="description" content="Web Mobile Control" />
     <meta name="author" content="ein-bandit" />
+    <meta name="theme-color" content="#000000" />
     <link rel="stylesheet" type="text/css" href="main.css" />
     <meta
       name="viewport"
@@ -14,13 +15,20 @@
 
   <body>
     <div class="wrapper">
-      <div id="connect" class="connect">
-        <button onclick="initWebRTCConnection()">connect</button>
+      <div id="connect" class="content connect">
+        <div class="connect-area">
+          <div class="connect-btn" onclick="connectClient()">connect</div>
+        </div>
       </div>
-      <br />
-      <div id="data" class="hidden"><!-- put data here --></div>
-      <div id="channel-data"></div>
-      <div id="tap-area"><span>tapable area</span></div>
+      <div id="content" class="content data hidden">
+        <div id="data" class="hidden"></div>
+        <div id="tap-area-1" class="tapable-area tap-area-1">
+          <span>tapable area1</span>
+        </div>
+        <div id="tap-area-2" class="tapable-area tap-area-2">
+          <span>tapable area2</span>
+        </div>
+      </div>
     </div>
     <div id="feature-area"></div>
     <div id="logger"></div>

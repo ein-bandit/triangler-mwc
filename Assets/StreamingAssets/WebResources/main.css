@@ -1,42 +1,72 @@
 body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  background: url(bg.jpg);
-  background-repeat: all;
+  background: url(bg_dark.png);
+  /*background: url(bg.jpg);*/
+  background-repeat: repeat;
   margin: 0;
+  overflow-x: hidden;
 }
 .hidden {
   display: none;
 }
-#data,
-#channel-data {
+#data {
+  position: absolute;
+  top: 0;
   width: 100%;
-  height: 100px;
-  margin: 20px;
+  height: 20%;
   background: yellow;
-  margin: 0 auto;
+  opacity: 0.75;
 }
-#tap-area {
-  width: 100px;
-  height: 75px;
-  background-color: lightblue;
+.connect-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  top: 25%;
+  bottom: 50%;
+}
+.connect-area .connect-btn {
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid white;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 2em;
+}
+.tapable-area {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  right: 25px;
+  bottom: 25px;
+
+  background-color: transparent;
+  border: 1px dashed white;
+  border-radius: 5px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   margin: 0 auto;
-  margin-top: 50px;
 }
-#connect {
-  margin-top: 33%;
-  width: 100%;
-  margin: 0 auto;
-  text-align: center;
+.tapable-area span {
+  font-size: 2em;
+  color: white;
 }
-#connect button {
-  width: 50%;
-  font-size: 20px;
+
+.tapable-area.tap-area-1 {
+  bottom: 50%;
+  margin-bottom: 5px;
+  top: 20px;
+}
+.tapable-area.tap-area-2 {
+  top: 50%;
+  bottom: 35px;
+  margin-top: 5px;
 }
 
 #feature-area {
@@ -51,16 +81,23 @@ body {
 .detected-feature {
   background: red;
   margin: 10px 0 10px 0;
-  padding: 15px 25px 15px 15px;
+  margin-left: -10px;
+  padding: 10px 20px 10px 20px;
   font-size: 1em;
   color: white;
   width: fit-content;
   width: -moz-available;
+
+  -webkit-box-shadow: 5px 5px 5px 0px rgba(144, 144, 144, 0.65);
+  -moz-box-shadow: 5px 5px 5px 0px rgba(144, 144, 144, 0.65);
+  box-shadow: 5px 5px 5px 0px rgba(144, 144, 144, 0.65);
+
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 .wrapper {
   display: flex;
   flex-direction: column;
-  margin-top: 50%;
 }
 
 #logger {
