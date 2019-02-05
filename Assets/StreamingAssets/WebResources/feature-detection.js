@@ -35,7 +35,7 @@ var features = {
     listener: function(sendFunc) {
       window.addEventListener("deviceorientation", function(evt) {
         sendFunc({
-          type: "accelerometer",
+          type: "orientation",
           data: {
             a: Math.floor(evt.alpha),
             b: Math.floor(evt.beta),
@@ -59,6 +59,8 @@ var features = {
     message: "device motion available",
     listener: function(sendFunc) {
       window.addEventListener("devicemotion", function(evt) {
+        //TODO: add check if phone was shaked and send data once.
+
         //if (evt.acceleration.x > 0.5 || evt.acceleration.y > 0.5 || evt.acceleration.z > 0.5) {
         if (evt.rotationRate.alpha > 30) {
           dataElement.innerHTML =
@@ -68,16 +70,16 @@ var features = {
             JSON.stringify({ x: evt.rotationRate.alpha });
         }
         //}
-        //sendFunc({type:'deviceMotion', data: evt.value > 0}));
+        //sendFunc({type:'motion', data: evt.value > 0}));
       });
     }
   },
-  ambientLight: {
+  deviceLight: {
     available: "ondevicelight" in window,
     message: "ambient light available",
     listener: function(sendFunc) {
       window.addEventListener("devicelight", function(evt) {
-        sendFunc(evt.value);
+        sendFunc({ type: "lightsensor", data: evt.value });
       });
     }
   }

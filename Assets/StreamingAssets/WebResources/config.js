@@ -6,7 +6,7 @@ const config = {
   deviceOrientation: { enabled: false },
   deviceProximity: { enabled: true },
   deviceMotion: { enabled: true },
-  ambientLight: { enabled: false }
+  deviceLight: { enabled: false }
 };
 
 const debug = false;

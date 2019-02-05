@@ -6,9 +6,10 @@ namespace MobileWebControl.NetworkData.InputData
 {
     public enum InputDataType
     {
-        accelerometer,
+        orientation,
         lightsensor,
         proximity,
+        motion,
         tap,
 
         register,
