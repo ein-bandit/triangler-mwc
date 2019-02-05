@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
         Debug.Log($"received input in player: {type},{inputData}");
         switch (type)
         {
-            case InputDataType.accelerometer:
+            case InputDataType.orientation:
                 Vector3 deviceOrientation = (Vector3)inputData;
 
                 //z (c) = x; x (a) = y; y (b) = z;

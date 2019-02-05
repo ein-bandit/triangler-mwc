@@ -110,7 +110,7 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
 
         switch (type)
         {
-            case InputDataType.accelerometer:
+            case InputDataType.orientation:
                 return new Vector3(float.Parse(data["a"].ToString()) * -1,
                                     float.Parse(data["b"].ToString()) * -1,
                                     float.Parse(data["c"].ToString()));
