@@ -106,8 +106,14 @@ public class Player : MonoBehaviour
                             boostActivated = true;
                         }
                         break;
+                    case "tap-area-stealth":
+                        EnableStealth();
+                        break;
                     case "start":
                         //to be implemented, playermanager set ready.
+                        break;
+                    case "reset":
+                        //reset position if something went wrong?
                         break;
                     default:
                         //do nothing, tap not recognized.
@@ -116,15 +122,24 @@ public class Player : MonoBehaviour
                 break;
             case InputDataType.proximity:
                 Debug.Log($"received proximity {activateStealthDelay}");
-                if (canActivateStealth && (bool)inputData == false)
+                //false indicates sensor is blocked / covered.
+                if ((bool)inputData == false)
                 {
-                    _renderer.enabled = false;
-                    canActivateStealth = false;
-                    Invoke("ResetInvisible", 1f);
+                    EnableStealth();
                 }
                 break;
             default:
                 break;
+        }
+    }
+
+    private void EnableStealth()
+    {
+        if (canActivateStealth)
+        {
+            _renderer.enabled = false;
+            canActivateStealth = false;
+            Invoke("ResetInvisible", 1f);
         }
     }
 
