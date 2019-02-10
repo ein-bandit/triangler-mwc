@@ -103,7 +103,7 @@ namespace MobileWebControl
 
         private void OnApplicationQuit()
         {
-            Debug.Log("quitting");
+            Debug.Log("shutting down.");
             webRTCServer.Dispose();
             webserver.Stop();
         }

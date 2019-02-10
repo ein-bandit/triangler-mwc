@@ -50,7 +50,7 @@ function setupDataChannelAndListeners() {
     //TODO: reaftor to dataChannels["all"] ??
     features[featureName].listener(function(data) {
       if (debug) {
-        console.log("sending: " + data.type, data);
+        console.log("sending: " + data.type + ", " + JSON.stringify(data.data));
         dataElement.innerHTML = JSON.stringify(data);
       }
 

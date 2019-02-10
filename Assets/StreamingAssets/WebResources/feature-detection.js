@@ -16,7 +16,7 @@ var features = {
             setTimeout(() => {
               evt.target.classList.remove("tapped");
             }, 250);
-            sendFunc({ type: "tap", data: id });
+            sendFunc({ type: "tap", data: evt.target.id });
           });
         }
       }

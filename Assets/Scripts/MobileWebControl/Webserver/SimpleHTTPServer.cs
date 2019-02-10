@@ -210,10 +210,6 @@ namespace MobileWebControl.Webserver
             this._port = port;
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
-            // UnityToolbag.Dispatcher.InvokeAsync(() =>
-            // {
-            //     UnityEngine.Debug.Log("asdf: " + _serverThread.ManagedThreadId);
-            // });
         }
     }
 }

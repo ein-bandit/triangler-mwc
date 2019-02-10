@@ -32,6 +32,7 @@ public class PlayerManager : MonoBehaviour
         Guid playerGuid = (Guid)playerInfo.data;
         GameObject player = Instantiate(playerPrefab);
         Player playerObj = player.GetComponent<Player>();
+        playerObj.SetPlayerColor(Color.cyan);
 
         players.Add(playerGuid, playerObj);
     }

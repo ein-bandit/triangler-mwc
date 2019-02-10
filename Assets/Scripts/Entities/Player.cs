@@ -5,40 +5,68 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float speedStep = 2f;
-    private float speed = 0f;
-    private float steeringAngle = 0f;
+    public float speedForce = 10f;
+    public float rotationSpeed = 5f;
+    public float boostForce = 15f;
+    public float reactivateBoostTime = 2f;
+    public float activateStealthDelay = 10f;
+
 
     private Rigidbody _rigidbody;
-
+    private Renderer _renderer;
     private Material _material;
+    private PlayerManager playerManager;
 
-    private void Awake()
-    {
 
-    }
+    private bool boostActivated = false;
+    private bool canBoost = true;
+
+    private bool canActivateStealth = true;
+
+    private float currentRotation = 0f;
+
+    private Color playerColor;
+    private float initalRotationX = float.MinValue;
+    private float maxRotationX = 50;
+
+    public bool started = false;
 
     // Start is called before the first frame update
     void Start()
     {
+        playerManager = FindObjectOfType<PlayerManager>();
         _rigidbody = GetComponent<Rigidbody>();
-        _rigidbody.isKinematic = true;
-        _material = GetComponent<Renderer>().material;
+        _renderer = GetComponentInChildren<Renderer>();
+        _material = _renderer.material;
+        _material.color = this.playerColor;
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (Input.GetKey(KeyCode.W))
+        if (started)
         {
-            speed += speedStep;
+            _rigidbody.AddForce(transform.forward * speedForce);
+
+            if (canBoost && boostActivated)
+            {
+                boostActivated = false;
+                canBoost = false;
+                Invoke("ReactivateBoost", reactivateBoostTime);
+                _rigidbody.AddForce(transform.forward * boostForce, ForceMode.Impulse);
+            }
+
+            _rigidbody.AddRelativeTorque(transform.up * rotationSpeed * currentRotation, ForceMode.Force);
         }
-        else if (Input.GetKey(KeyCode.S))
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Wall")
         {
-            speed -= speedStep;
+            transform.rotation = Quaternion.LookRotation(Vector3.Reflect(transform.forward, other.transform.forward));
+            _rigidbody.velocity = Vector3.zero;
+            _rigidbody.AddForce(transform.forward * speedForce, ForceMode.Impulse);
         }
-        //Debug.Log($"new speed {speed}");
-        //transform.position = Vector3.Lerp(transform.position, transform.position + (Vector3.left * speed) + (Vector3.back * steeringAngle * 0.1f), Time.deltaTime);
     }
 
     public void StartMoving()
@@ -52,44 +80,75 @@ public class Player : MonoBehaviour
         switch (type)
         {
             case InputDataType.orientation:
-                Vector3 deviceOrientation = (Vector3)inputData;
-
-                //z (c) = x; x (a) = y; y (b) = z;
-                transform.rotation = Quaternion.Euler(180 + transform.rotation.x, 90 + deviceOrientation.x, transform.rotation.z);
-
-                steeringAngle += deviceOrientation.x - 90;
-
-                //add or reduce speed with y (a).
-                //should be -1 to 1 now.
-                // float multiplier = deviceOrientation.y / 180;
-                // speed += speedStep * multiplier;
-                // if (speed < 0)
-                // {
-                //     speed = 0;
-                // }
-                // else if (speed > 5)
-                // {
-                //     speed = 10;
-                // }
-                //roll x (b) is not needed by now.
+                if (initalRotationX == float.MinValue)
+                {
+                    initalRotationX = ((Vector3)inputData).x;
+                    //phone was initialized in default position - game can start.
+                    started = true;
+                }
+                float rotationX = ((Vector3)inputData).x - initalRotationX;
+                //get float from -1 to 1. (lerp to new rotation ?)
+                currentRotation = Mathf.Clamp(rotationX, -maxRotationX, maxRotationX) / maxRotationX;
+                //Debug.Log($"calculated deviceorientation {rotationX}, {currentRotation}");
                 break;
             case InputDataType.tap:
-                _material.color = Color.red;
-                Invoke("ResetMaterialColor", 1f);
+                //Debug.Log($"received string {(string)inputData}");
+                switch ((string)inputData)
+                {
+                    case "tap-area-1":
+                        //choose random color (from other players? get from playerManager)
+                        _material.color = Color.green;
+                        Invoke("ResetMaterialColor", 1f);
+                        break;
+                    case "tap-area-2":
+                        if (canBoost)
+                        {
+                            boostActivated = true;
+                        }
+                        break;
+                    case "start":
+                        //to be implemented, playermanager set ready.
+                        break;
+                    default:
+                        //do nothing, tap not recognized.
+                        break;
+                }
                 break;
             case InputDataType.proximity:
-                if ((bool)inputData == true)
+                Debug.Log($"received proximity {activateStealthDelay}");
+                if (canActivateStealth && (bool)inputData == false)
                 {
-                    _material.color = Color.green;
-                    Invoke("ResetMaterialColor", 1f);
+                    _renderer.enabled = false;
+                    canActivateStealth = false;
+                    Invoke("ResetInvisible", 1f);
                 }
                 break;
             default:
                 break;
         }
     }
+
+    public void SetPlayerColor(Color color)
+    {
+        this.playerColor = color;
+    }
     private void ResetMaterialColor()
     {
-        _material.color = Color.blue;
+        _material.color = this.playerColor;
+    }
+
+    private void ResetInvisible()
+    {
+        _renderer.enabled = true;
+        Invoke("ResetCanActivateStealth", activateStealthDelay);
+    }
+    private void ResetCanActivateStealth()
+    {
+        canActivateStealth = true;
+    }
+
+    private void ReactivateBoost()
+    {
+        canBoost = true;
     }
 }

@@ -205,7 +205,7 @@ namespace MobileWebControl.WebRTC
 
                                         using (session.WebRtc)
                                         {
-                                            session.WebRtc.AddServerConfig("stun:stun.l.google.com:19302", string.Empty, string.Empty);
+                                            //session.WebRtc.AddServerConfig("stun:stun.l.google.com:19302", string.Empty, string.Empty);
                                             session.WebRtc.AddServerConfig("stun:stun.anyfirewall.com:3478", string.Empty, string.Empty);
                                             session.WebRtc.AddServerConfig("stun:stun.stunprotocol.org:3478", string.Empty, string.Empty);
                                             //session.WebRtc.AddServerConfig("turn:192.168.0.100:3478", "test", "test");
@@ -223,7 +223,7 @@ namespace MobileWebControl.WebRTC
                                                 while (!session.Cancel.Token.IsCancellationRequested &&
                                                        session.WebRtc.ProcessMessages(1000))
                                                 {
-                                                    UnityEngine.Debug.Log(".");
+                                                    //UnityEngine.Debug.Log(".");
                                                 }
                                                 session.WebRtc.ProcessMessages(1000);
                                             }
@@ -263,12 +263,12 @@ namespace MobileWebControl.WebRTC
 
                                         session.WebRtc.OnFailure += delegate (string error)
                                         {
-                                            Trace.WriteLine($"OnFailure: {error}");
+                                            UnityEngine.Debug.Log($"OnFailure: {error}");
                                         };
 
                                         session.WebRtc.OnError += delegate (string error)
                                         {
-                                            Trace.WriteLine($"OnError: {error}");
+                                            UnityEngine.Debug.Log($"OnError: {error}");
                                         };
 
                                         session.WebRtc.OnDataMessage += delegate (string dmsg)

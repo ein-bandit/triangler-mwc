@@ -103,7 +103,7 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
 
     private object ParseMessageData(Enum type, JsonData data)
     {
-        if (!data.IsObject || data.ToString().Length == 0)
+        if (data.ToString().Length == 0)
         {
             return null;
         }
