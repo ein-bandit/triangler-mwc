@@ -7,6 +7,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
+    private PlayerManager playerManager;
+
     private void Awake()
     {
         if (!instance)
@@ -16,13 +18,20 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Destroy(this);
+            Destroy(gameObject);
         }
     }
 
     void Start()
     {
+        playerManager = GetComponent<PlayerManager>();
+    }
 
+    public void AdvanceToGame()
+    {
+        Debug.Log("advance to game");
+        SceneManager.LoadScene("Game");
+        playerManager.ActivateGameOnClients();
     }
 
     public void PlayerCountUpdate(int playerCount)

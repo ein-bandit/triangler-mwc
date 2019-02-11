@@ -185,13 +185,13 @@ function setupWebRTC(dataChannelSetupCallback) {
   };
 
   // can't manage to get trigger from other side ;/ wtf?
-  rTCPeerConnection.ondatachannel = function(event) {
-    dataChannel = event.channel;
-    console.log("special", dataChannel);
-    console.log("new channels", channels);
-    setDataChannel(dataChannel);
-    channels[dataChannel.label] = dataChannel;
-  };
+  // rTCPeerConnection.ondatachannel = function(event) {
+  //   dataChannel = event.channel;
+  //   console.log("special", dataChannel);
+  //   console.log("new channels", channels);
+  //   setDataChannel(dataChannel);
+  //   channels[dataChannel.label] = dataChannel;
+  // };
 
   rTCPeerConnection.createOffer(
     function(desc) {
@@ -221,28 +221,29 @@ function setupWebRTC(dataChannelSetupCallback) {
   );
 }
 
-function createLocalDataChannel(name) {
+function createLocalDataChannel(name, callbacks) {
   console.log("creating data channel", name);
   dataChannel = rTCPeerConnection.createDataChannel(name, {});
   channels[name] = dataChannel;
-  setDataChannel(dataChannel);
+  setDataChannel(dataChannel, callbacks);
 }
 
-function setDataChannel(dc) {
+function setDataChannel(dc, callbacks) {
   console.log("setDataChannel[" + dc.id + "]: " + dc.label);
 
   dc.onerror = function(error) {
     console.log("DataChannel Error:", error);
+    callbacks.error(error);
   };
   dc.onmessage = function(event) {
     console.log("DataChannel Message:", event.data);
+    callbacks.message(event.data);
   };
   dc.onopen = function() {
     dataChannel.send(dc.id, "initiated");
   };
   dc.onclose = function() {
     console.log(dc.id, "closed");
-    removeListeners();
-    updateScene("connect");
+    callbacks.close();
   };
 }

@@ -11,6 +11,8 @@ public class Player : MonoBehaviour
     public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
 
+    private float resetMatrialColorDelay = 3f;
+
     private Rigidbody _rigidbody;
     private Renderer _renderer;
     private Material _material;
@@ -30,6 +32,8 @@ public class Player : MonoBehaviour
 
     private bool started = false;
 
+    public float startGameDelay = 3f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -37,6 +41,7 @@ public class Player : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _renderer = GetComponentInChildren<Renderer>();
         _material = _renderer.material;
+
         _material.color = this.playerColor;
     }
 
@@ -68,9 +73,10 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void StartMoving()
+    public IEnumerator StartPlayerMovement()
     {
-        _rigidbody.isKinematic = false;
+        yield return new WaitForSeconds(startGameDelay);
+        started = true;
     }
 
     public void ReceiveInput(InputDataType type, object inputData)
@@ -93,12 +99,12 @@ public class Player : MonoBehaviour
                 //Debug.Log($"received string {(string)inputData}");
                 switch ((string)inputData)
                 {
-                    case "tap-area-1":
+                    case "tap-area-mask":
                         //choose random color (from other players? get from playerManager)
-                        _material.color = Color.green;
-                        Invoke("ResetMaterialColor", 1f);
+                        _material.color = playerManager.GetRandomPlayerColor(this.playerColor);
+                        Invoke("ResetMaterialColor", resetMatrialColorDelay);
                         break;
-                    case "tap-area-2":
+                    case "tap-area-boost":
                         if (canBoost)
                         {
                             boostActivated = true;
@@ -108,10 +114,12 @@ public class Player : MonoBehaviour
                         EnableStealth();
                         break;
                     case "ready":
-                        //to be implemented, playermanager set ready.                        
+                        Debug.Log("should already be handled in playermanager");
+                        //to be implemented, playermanager set ready.                  
                         break;
-                    case "reset":
+                    case "reset-orientation":
                         //reset position if something went wrong?
+                        initalRotationX = ((Vector3)inputData).x;
                         break;
                     default:
                         //do nothing, tap not recognized.

@@ -14,6 +14,7 @@ namespace MobileWebControl.NetworkData.InputData
 
         register,
         unregister,
+        ready,
 
         invalid,
 

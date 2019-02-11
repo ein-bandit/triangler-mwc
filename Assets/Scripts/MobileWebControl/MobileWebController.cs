@@ -129,6 +129,11 @@ namespace MobileWebControl
             return true;
         }
 
+        public void SendToClients(IComparable identifier, string message)
+        {
+            webRTCServer.SendWebRTCMessage(identifier, message);
+        }
+
         private void OnApplicationQuit()
         {
             Debug.Log("shutting down.");

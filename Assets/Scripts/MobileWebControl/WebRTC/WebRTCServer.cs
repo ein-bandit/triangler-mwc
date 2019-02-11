@@ -170,6 +170,11 @@ namespace MobileWebControl.WebRTC
         public const string offer = "offer";
         public const string onicecandidate = "onicecandidate";
 
+        public void SendWebRTCMessage(IComparable guid, string message)
+        {
+            Streams[(Guid)guid].WebRtc.DataChannelSendText(message);
+        }
+
         private void OnReceive(IWebSocketConnection context, string msg)
         {
             //UnityEngine.Debug.Log($"OnReceive {context.ConnectionInfo.Id}: {msg}");

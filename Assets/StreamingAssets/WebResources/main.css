@@ -17,7 +17,8 @@ body {
   background: yellow;
   opacity: 0.75;
 }
-.connect-area {
+.connect-area,
+.ready-area {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +29,8 @@ body {
   top: 25%;
   bottom: 50%;
 }
-.connect-area .connect-btn {
+.connect-area .connect-btn,
+.ready-area .ready-btn {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid white;
   color: white;
@@ -37,10 +39,14 @@ body {
   font-size: 2em;
   transition: background-color 0.25s;
 }
-.connect-area .connect-btn.tapped {
+.connect-area .connect-btn.tapped,
+.ready-area .ready-btn.tapped {
   background-color: rgba(255, 255, 255, 0.25);
 }
-
+.ready-area .ready-btn.disabled {
+  background-color: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
 .tapable-area {
   position: absolute;
   top: 25px;
@@ -67,17 +73,27 @@ body {
   user-select: none;
 }
 
-.tapable-area.tap-area-1 {
+.tapable-area.tap-area-mask {
   bottom: 50%;
-  margin-bottom: 5px;
+  right: 50%;
 }
-.tapable-area.tap-area-2 {
+.tapable-area.tap-area-boost {
+  bottom: 50%;
+  left: 50%;
+}
+.tapable-area.tap-area-fire {
   top: 50%;
-  margin-top: 5px;
 }
 
 .tapable-area.tapped {
   background-color: rgba(255, 255, 255, 0.25);
+}
+
+.tapable-area.tapable-area-top {
+  top: 10px;
+  right: 10px;
+  left: 75%;
+  bottom: 0;
 }
 
 #feature-area {
