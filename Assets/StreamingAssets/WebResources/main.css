@@ -97,7 +97,7 @@ body {
   font-size: 1em;
   color: white;
   width: fit-content;
-  width: -moz-available;
+  width: -moz-fit-content;
 
   -webkit-box-shadow: 5px 5px 5px 0px rgba(144, 144, 144, 0.65);
   -moz-box-shadow: 5px 5px 5px 0px rgba(144, 144, 144, 0.65);

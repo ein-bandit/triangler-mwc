@@ -27,7 +27,7 @@ public class PlayerManager : MonoBehaviour
         NetworkEventDispatcher.StopListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
     }
 
-    void RegisterPlayer(DataHolder playerInfo)
+    public void RegisterPlayer(DataHolder playerInfo)
     {
         Guid playerGuid = (Guid)playerInfo.data;
         GameObject player = Instantiate(playerPrefab);
@@ -35,16 +35,24 @@ public class PlayerManager : MonoBehaviour
         playerObj.SetPlayerColor(Color.cyan);
 
         players.Add(playerGuid, playerObj);
+
+        GameManager.instance.PlayerCountUpdate(players.Keys.Count);
     }
 
-    void UnregisterPlayer(DataHolder playerInfo)
+    public void UnregisterPlayer(DataHolder playerInfo)
     {
-        Player playerObj = players[(Guid)playerInfo.data];
+        Player playerObj = players[(Guid)playerInfo.identifier];
+        players.Remove((Guid)playerInfo.identifier);
         Destroy(playerObj.gameObject);
+
+        GameManager.instance.PlayerCountUpdate(players.Keys.Count);
     }
 
-    void ReceivePlayerInput(DataHolder data)
+    public void ReceivePlayerInput(DataHolder data)
     {
-        players[(Guid)data.identifier].ReceiveInput((InputDataType)data.type, data.data);
+        if (players.ContainsKey((Guid)data.identifier))
+        {
+            players[(Guid)data.identifier].ReceiveInput((InputDataType)data.type, data.data);
+        }
     }
 }

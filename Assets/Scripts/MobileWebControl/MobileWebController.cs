@@ -25,16 +25,44 @@ namespace MobileWebControl
         public string InterpreterClassName;
 
         private WebRTCServer webRTCServer;
-        public int webRTCPort = 1234;
+        public static int webRTCPort = 1234;
 
-        private SimpleHTTPServer webserver;
-        public int webserverPort = 8880;
+        private static SimpleHTTPServer webserver;
+        public static int webserverPort = 8880;
+
+        public static string webServerAddress
+        {
+            get
+            {
+                return webserver.PublicIPAddress;
+            }
+        }
 
         private NetworkEventDispatcher networkEventDispatcher;
 
+        //private static readonly String WebResourcesLocation = "WebResources";
+
+
+        public static MobileWebController instance;
         void Awake()
         {
+            if (!instance)
+            {
+                instance = this;
+                DontDestroyOnLoad(this);
+
+                Initialize();
+            }
+            else
+            {
+                Destroy(this);
+            }
+        }
+
+        private void Initialize()
+        {
             webserver = new SimpleHTTPServer(Path.Combine(Application.streamingAssetsPath, "WebResources"), webserverPort);
+            //webserver = new SimpleHTTPServer(Path.Combine(Application.dataPath, WebResourcesLocation), webserverPort);
             Debug.Log($"opened webserver on port {webserverPort}.");
             //Debug.Log($"serving files from: {Application.streamingAssetsPath}");
 

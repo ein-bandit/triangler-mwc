@@ -86,7 +86,17 @@ namespace MobileWebControl.Webserver
         private Thread _serverThread;
         private string _rootDirectory;
         private HttpListener _listener;
+
         private int _port;
+        private string _hostAddress;
+
+        public string PublicIPAddress
+        {
+            get
+            {
+                return "http://" + _hostAddress + ":" + _port;
+            }
+        }
 
         public int Port
         {
@@ -110,7 +120,6 @@ namespace MobileWebControl.Webserver
         /// <param name="path">Directory path to serve.</param>
         public SimpleHTTPServer(string path)
         {
-            //get an empty port
             TcpListener l = new TcpListener(IPAddress.Loopback, 0);
             l.Start();
             int port = ((IPEndPoint)l.LocalEndpoint).Port;
@@ -208,8 +217,23 @@ namespace MobileWebControl.Webserver
         {
             this._rootDirectory = path;
             this._port = port;
+            this._hostAddress = GetPublicIPAddress();
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
+        }
+
+        private string GetPublicIPAddress()
+        {
+            IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+            foreach (IPAddress addr in localIPs)
+            {
+                if (addr.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return addr.ToString();
+                }
+            }
+            //return localhost if no valid address found.
+            return IPAddress.Loopback.ToString();
         }
     }
 }

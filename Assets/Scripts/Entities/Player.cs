@@ -11,7 +11,6 @@ public class Player : MonoBehaviour
     public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
 
-
     private Rigidbody _rigidbody;
     private Renderer _renderer;
     private Material _material;
@@ -29,7 +28,7 @@ public class Player : MonoBehaviour
     private float initalRotationX = float.MinValue;
     private float maxRotationX = 50;
 
-    public bool started = false;
+    private bool started = false;
 
     // Start is called before the first frame update
     void Start()
@@ -84,7 +83,6 @@ public class Player : MonoBehaviour
                 {
                     initalRotationX = ((Vector3)inputData).x;
                     //phone was initialized in default position - game can start.
-                    started = true;
                 }
                 float rotationX = ((Vector3)inputData).x - initalRotationX;
                 //get float from -1 to 1. (lerp to new rotation ?)
@@ -109,8 +107,8 @@ public class Player : MonoBehaviour
                     case "tap-area-stealth":
                         EnableStealth();
                         break;
-                    case "start":
-                        //to be implemented, playermanager set ready.
+                    case "ready":
+                        //to be implemented, playermanager set ready.                        
                         break;
                     case "reset":
                         //reset position if something went wrong?
