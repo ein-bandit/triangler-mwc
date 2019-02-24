@@ -34,6 +34,8 @@ function updateScene(mode) {
     connectElement.classList.add("hidden");
     readyElement.classList.remove("hidden");
 
+    readyElement.classList.remove("disabled");
+
     if (debug) {
       dataElement.classList.remove("hidden");
     }
