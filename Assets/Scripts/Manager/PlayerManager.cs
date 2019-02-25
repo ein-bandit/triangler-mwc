@@ -166,7 +166,14 @@ public class PlayerManager : MonoBehaviour
         Destroy(player.Player.gameObject);
         Destroy(player.MenuPlayer.gameObject);
 
-        GameManager.instance.PlayerCountUpdate(players.Keys.Count);
+        if (SceneManager.GetActiveScene().name == "Menu")
+        {
+            GameManager.instance.PlayerCountUpdate(players.Keys.Count);
+        }
+        else
+        {
+            CheckRemainingPlayers();
+        }
     }
 
     public void ReceivePlayerInput(DataHolder data)
@@ -209,23 +216,29 @@ public class PlayerManager : MonoBehaviour
 
     private void CheckRemainingPlayers()
     {
-        int playersAlive = players.Keys.Count;
+        List<Player> alive = new List<Player>();
         foreach (PlayerHolder ph in players.Values)
         {
-            if (ph.Ready == false)
+            if (ph.Ready == true)
             {
-                playersAlive--;
+                alive.Add(ph.Player);
             }
         }
-        if (playersAlive <= 1)
+        if (alive.Count <= 1)
         {
+            foreach (Player p in alive)
+            {
+                p.DisablePlayer();
+                this.SendMessageToClient(p, "stop");
+            }
             StartCoroutine(EndGame());
         }
     }
 
     private IEnumerator EndGame()
     {
-        Debug.Log("Game over!");
+        Debug.Log("Game over");
+        FindObjectOfType<Canvas>().transform.Find("End").gameObject.SetActive(true);
         yield return new WaitForSeconds(endGameDelay);
         SceneManager.LoadScene("Menu");
     }

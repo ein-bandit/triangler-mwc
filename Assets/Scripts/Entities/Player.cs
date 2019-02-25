@@ -10,12 +10,14 @@ public class Player : MonoBehaviour
     public float boostForce = 15f;
     public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
+    public float stealthActiveTime = 2f;
 
-    public float playerInvisibleDelay = .15f;
+    public float playerDeathResetDelay = .15f;
 
 
     private Rigidbody _rigidbody;
     private Renderer _renderer;
+    private Renderer _noseRenderer;
     private Material _material;
     private PlayerManager playerManager;
 
@@ -42,7 +44,8 @@ public class Player : MonoBehaviour
     {
         playerManager = GameManager.instance.GetComponent<PlayerManager>();
         _rigidbody = GetComponent<Rigidbody>();
-        _renderer = GetComponentInChildren<Renderer>();
+        _renderer = transform.Find("body").GetComponent<Renderer>();
+        _noseRenderer = transform.Find("head").GetComponent<Renderer>();
         _material = _renderer.material;
 
         _material.color = this.playerColor;
@@ -162,11 +165,12 @@ public class Player : MonoBehaviour
 
     private void EnableStealth()
     {
-        if (canActivateStealth)
+        if (canActivateStealth && started)
         {
             _renderer.enabled = false;
+            _noseRenderer.enabled = false;
             canActivateStealth = false;
-            Invoke("ResetInvisible", 1f);
+            Invoke("ResetInvisible", stealthActiveTime);
         }
     }
 
@@ -186,6 +190,7 @@ public class Player : MonoBehaviour
     private void ResetInvisible()
     {
         _renderer.enabled = true;
+        _noseRenderer.enabled = true;
         Invoke("ResetCanActivateStealth", activateStealthDelay);
     }
 
@@ -220,6 +225,13 @@ public class Player : MonoBehaviour
         playerManager.SendMessageToClient(this, "hit");
     }
 
+    public void DisablePlayer()
+    {
+        started = false;
+        _rigidbody.velocity = Vector3.zero;
+        _rigidbody.isKinematic = true;
+    }
+
     private IEnumerator DeathRotation()
     {
         int step = 6;
@@ -233,7 +245,7 @@ public class Player : MonoBehaviour
                     transform.rotation.z)
                 );
         }
-        yield return new WaitForSeconds(playerInvisibleDelay);
+        yield return new WaitForSeconds(playerDeathResetDelay);
         gameObject.SetActive(false);
         playerManager.RegistratePlayerDeath(this);
     }

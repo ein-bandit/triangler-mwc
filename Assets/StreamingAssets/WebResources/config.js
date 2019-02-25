@@ -5,7 +5,7 @@ const config = {
     enabled: true,
     areas: [
       "tap-area-boost",
-      "tap-area-mask",
+      "tap-area-stealth",
       "tap-area-fire",
       "tap-area-reset-orientation"
     ]
