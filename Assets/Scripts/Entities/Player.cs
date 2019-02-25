@@ -13,16 +13,22 @@ public class Player : MonoBehaviour
 
     private float resetMatrialColorDelay = 3f;
 
+    public float enableFeatureDelay = 2f;
+
     private Rigidbody _rigidbody;
     private Renderer _renderer;
     private Material _material;
     private PlayerManager playerManager;
 
+    private Projectile projectile;
+
 
     private bool boostActivated = false;
-    private bool canBoost = true;
+    private bool canBoost = false;
 
-    private bool canActivateStealth = true;
+    private bool canActivateStealth = false;
+
+    private bool projectileReady = false;
 
     private float currentRotation = 0f;
 
@@ -31,8 +37,6 @@ public class Player : MonoBehaviour
     private float maxRotationX = 50;
 
     private bool started = false;
-
-    public float startGameDelay = 3f;
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +49,13 @@ public class Player : MonoBehaviour
         _material.color = this.playerColor;
     }
 
+    private void Update()
+    {
+        if (projectile && Input.GetKeyUp(KeyCode.F))
+        {
+            projectile.Fire();
+        }
+    }
     void FixedUpdate()
     {
         if (started)
@@ -65,23 +76,33 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"collided with {other.tag} !");
         if (other.tag == "Wall")
         {
-            transform.rotation = Quaternion.LookRotation(Vector3.Reflect(transform.forward, other.transform.forward));
-            _rigidbody.velocity = Vector3.zero;
-            _rigidbody.AddForce(transform.forward * speedForce, ForceMode.Impulse);
+            ReflectPlayer(transform.forward, other.transform.forward);
+        }
+        else if (other.tag == "Player")
+        {
+            ReflectPlayer(transform.forward, transform.position - other.transform.position);
         }
     }
 
-    public IEnumerator StartPlayerMovement()
+    private void ReflectPlayer(Vector3 forward, Vector3 normal)
     {
-        yield return new WaitForSeconds(startGameDelay);
+        transform.rotation = Quaternion.LookRotation(Vector3.Reflect(forward, normal));
+        _rigidbody.velocity = Vector3.zero;
+        _rigidbody.AddForce(transform.forward * speedForce, ForceMode.Impulse);
+    }
+
+    public void StartPlayerMovement()
+    {
         started = true;
+        EnableFeatures();
     }
 
     public void ReceiveInput(InputDataType type, object inputData)
     {
-        Debug.Log($"received input in player: {type},{inputData}");
+        //Debug.Log($"received input in player: {type},{inputData}");
         switch (type)
         {
             case InputDataType.orientation:
@@ -99,11 +120,6 @@ public class Player : MonoBehaviour
                 //Debug.Log($"received string {(string)inputData}");
                 switch ((string)inputData)
                 {
-                    case "tap-area-mask":
-                        //choose random color (from other players? get from playerManager)
-                        _material.color = playerManager.GetRandomPlayerColor(this.playerColor);
-                        Invoke("ResetMaterialColor", resetMatrialColorDelay);
-                        break;
                     case "tap-area-boost":
                         if (canBoost)
                         {
@@ -113,9 +129,16 @@ public class Player : MonoBehaviour
                     case "tap-area-stealth":
                         EnableStealth();
                         break;
-                    case "ready":
+                    case "tap-area-fire":
+                        if (projectileReady)
+                        {
+                            Debug.Log("firing projectile");
+                            projectile.Fire();
+                            projectileReady = false;
+                        }
+                        break;
+                    case "ready": //is handled in playermanager;
                         Debug.Log("should already be handled in playermanager");
-                        //to be implemented, playermanager set ready.                  
                         break;
                     case "reset-orientation":
                         //reset position if something went wrong?
@@ -149,13 +172,17 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void SetPlayerColor(Color color)
+    public void Init(Color color, Projectile projectile, int index)
     {
         this.playerColor = color;
-    }
-    private void ResetMaterialColor()
-    {
-        _material.color = this.playerColor;
+        this.projectile = projectile;
+
+        transform.rotation = Quaternion.Euler(0f, 90 * index, 0f);
+        transform.position = transform.position + new Vector3(
+            transform.forward.x * transform.localScale.x * 2,
+            transform.forward.y * transform.localScale.y * 2,
+            transform.forward.z * transform.localScale.z * 2
+        );
     }
 
     private void ResetInvisible()
@@ -163,6 +190,7 @@ public class Player : MonoBehaviour
         _renderer.enabled = true;
         Invoke("ResetCanActivateStealth", activateStealthDelay);
     }
+
     private void ResetCanActivateStealth()
     {
         canActivateStealth = true;
@@ -171,5 +199,39 @@ public class Player : MonoBehaviour
     private void ReactivateBoost()
     {
         canBoost = true;
+    }
+
+    private void ResetProjectileReady()
+    {
+        projectileReady = true;
+    }
+
+    private void EnableFeatures()
+    {
+        canBoost = true;
+        projectileReady = true;
+        canActivateStealth = true;
+    }
+
+    public void HitByProjectile()
+    {
+        started = false;
+        StartCoroutine(DeathRotation());
+        playerManager.SendMessageToClient(this, "hit");
+    }
+
+    private IEnumerator DeathRotation()
+    {
+        int step = 6;
+        for (int i = 0; i <= 360 / step; i++)
+        {
+            yield return new WaitForEndOfFrame();
+            transform.rotation = Quaternion.Euler(
+                new Vector3(
+                    transform.rotation.x,
+                    transform.rotation.y + (i * step),
+                    transform.rotation.z)
+                );
+        }
     }
 }

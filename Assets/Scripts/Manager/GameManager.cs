@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("advance to game");
         SceneManager.LoadScene("Game");
-        playerManager.ActivateGameOnClients();
+        playerManager.SendMessageToAllClients("start");
     }
 
     public void PlayerCountUpdate(int playerCount)

@@ -56,6 +56,17 @@ function setupDataChannelAndListeners() {
     message: function(message) {
       if (event.data === "start") {
         updateScene("game");
+      } else if (event.data == "hit") {
+        //put this to a own method inside features?
+        setTimeout(() => {
+          navigator.vibrate(75);
+        }, 100);
+        setTimeout(() => {
+          navigator.vibrate(75);
+        }, 200);
+        setTimeout(() => {
+          navigator.vibrate(75);
+        }, 300);
       }
     },
     error: function(error) {
@@ -79,7 +90,7 @@ function setupDataChannelAndListeners() {
         dataElement.innerHTML = JSON.stringify(data);
       }
 
-      //TODO: if your webrtc library supports multiple dataChannels use it for each data type.
+      //TODO: if your webrtc library supports multiple dataChannels you can use seperate channels for each data type.
 
       if (sendMode === "byte") {
         dataChannel.send(convertToBytes(data));
@@ -112,4 +123,8 @@ function handleReadyClick() {
   readyElement.classList.add("disabled");
 
   dataChannel.send(JSON.stringify({ type: "ready", data: "ready" }));
+}
+
+function activateBoostLocal() {
+  navigator.vibrate(500);
 }

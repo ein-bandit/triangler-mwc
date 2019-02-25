@@ -47,7 +47,7 @@ GameObject:
   - component: {fileID: 960018170930642918}
   m_Layer: 0
   m_Name: node_id40
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -282,7 +282,7 @@ MonoBehaviour:
   boostForce: 15
   reactivateBoostTime: 2
   activateStealthDelay: 10
-  started: 0
+  enableFeatureDelay: 2
 --- !u!54 &4183771242647578963
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -67,13 +67,13 @@ body {
   transition: background-color 0.25s;
 }
 .tapable-area span {
-  font-size: 2em;
+  font-size: 1.75em;
   color: white;
   pointer-events: none;
   user-select: none;
 }
 
-.tapable-area.tap-area-mask {
+.tapable-area.tap-area-stealth {
   bottom: 50%;
   right: 50%;
 }

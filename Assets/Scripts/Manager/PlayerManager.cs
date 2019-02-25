@@ -13,7 +13,24 @@ public class PlayerManager : MonoBehaviour
     private Dictionary<Guid, PlayerHolder> players = new Dictionary<Guid, PlayerHolder>();
     private List<Color> playerColors = new List<Color>() { Color.cyan, Color.green, Color.red, Color.yellow };
     public GameObject playerPrefab;
+    public GameObject projectilePrefab;
     public GameObject menuPlayerPrefab;
+
+    public float startGameDelay = 3f;
+
+    public int dummyPlayers = 0;
+
+    private void Update()
+    {
+        if (Input.GetKeyUp(KeyCode.Space) && players.Count > 0)
+        {
+            //set players ready and advance.
+            foreach (KeyValuePair<Guid, PlayerHolder> ph in players)
+            {
+                StartCoroutine(DummyStart(ph.Key));
+            }
+        }
+    }
 
     void Start()
     {
@@ -22,6 +39,33 @@ public class PlayerManager : MonoBehaviour
         NetworkEventDispatcher.StartListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
 
         SceneManager.activeSceneChanged += activeSceneChanged;
+
+        if (dummyPlayers > 0)
+        {
+            for (int i = 0; i < dummyPlayers; i++)
+            {
+                Guid g = new Guid("00000000-0000-0000-0000-00000000000" + i);
+                StartCoroutine(RegisterDummy(g));
+            }
+
+        }
+    }
+
+    private IEnumerator RegisterDummy(Guid g)
+    {
+        yield return new WaitForEndOfFrame();
+        DataHolder d = new DataHolder(g, InputDataType.register, g);
+        RegisterPlayer(d);
+
+        PlayerHolder ph = players[g];
+        ph.Dummy = true;
+        players[g] = ph;
+    }
+    private IEnumerator DummyStart(Guid g)
+    {
+        yield return new WaitForSeconds(1f);
+        DataHolder s = new DataHolder(g, InputDataType.ready, null);
+        ReceivePlayerInput(s);
     }
 
     private void OnDestroy()
@@ -41,17 +85,39 @@ public class PlayerManager : MonoBehaviour
             {
                 players[playerGuid].MenuPlayer.gameObject.SetActive(false);
                 players[playerGuid].Player.gameObject.SetActive(true);
-                StartCoroutine(players[playerGuid].Player.StartPlayerMovement());
-
             }
+        }
+        StartCoroutine(StartCountdown());
+    }
+
+    private IEnumerator StartCountdown()
+    {
+        yield return new WaitForSeconds(startGameDelay);
+        //show Countdown;
+        foreach (Guid playerGuid in players.Keys)
+        {
+            Debug.Log("starting game");
+            players[playerGuid].Player.StartPlayerMovement();
         }
     }
 
-    public void ActivateGameOnClients()
+    public void SendMessageToAllClients(string message)
     {
         foreach (Guid playerGuid in players.Keys)
         {
-            MobileWebController.instance.SendToClients(playerGuid, "start");
+            if (players[playerGuid].Dummy == true) return;
+            MobileWebController.instance.SendToClients(playerGuid, message);
+        }
+    }
+
+    public void SendMessageToClient(Player player, string message)
+    {
+        foreach (Guid playerGuid in players.Keys)
+        {
+            if (players[playerGuid].Player == player)
+            {
+                MobileWebController.instance.SendToClients(playerGuid, message);
+            }
         }
     }
 
@@ -61,12 +127,18 @@ public class PlayerManager : MonoBehaviour
         {
             Guid playerGuid = (Guid)playerInfo.data;
             GameObject player = Instantiate(playerPrefab, transform);
-            //getRandomPlayerColor
-            Color playerColor = playerColors[players.Keys.Count + 1];
-            player.GetComponent<Player>().SetPlayerColor(playerColor);
+
+            Color playerColor = playerColors[players.Keys.Count];
+            GameObject projectile = Instantiate(projectilePrefab, transform);
+
+            player.GetComponent<Player>().Init(playerColor, projectile.GetComponent<Projectile>(), players.Keys.Count);
             player.SetActive(false);
+
+            projectile.GetComponent<Projectile>().Init(player.GetComponent<Player>(), playerColor);
+            projectile.SetActive(false);
+
             GameObject menuPlayer = Instantiate(menuPlayerPrefab, transform);
-            menuPlayer.GetComponent<MenuPlayer>().SetPlayerColor(playerColor, players.Keys.Count);
+            menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, players.Keys.Count);
 
             players.Add(
                 playerGuid,
@@ -89,12 +161,12 @@ public class PlayerManager : MonoBehaviour
 
     public void ReceivePlayerInput(DataHolder data)
     {
+        Debug.Log(players.ContainsKey((Guid)data.identifier));
         if (players.ContainsKey((Guid)data.identifier))
         {
             PlayerHolder player = players[(Guid)data.identifier];
             if (((InputDataType)data.type).Equals(InputDataType.ready))
             {
-                Debug.Log("setting player ready");
                 player.Ready = true;
                 player.MenuPlayer.SetReady();
                 players[(Guid)data.identifier] = player;
@@ -115,17 +187,5 @@ public class PlayerManager : MonoBehaviour
         }
 
         GameManager.instance.AdvanceToGame();
-    }
-
-    public Color GetRandomPlayerColor(Color notThisColor)
-    {
-        int playerColorIndex = playerColors.FindIndex(color => { return !color.Equals(notThisColor); });
-        int randomIndex = 0;
-        do
-        {
-            randomIndex = UnityEngine.Random.Range(0, playerColors.Count);
-        } while (randomIndex == playerColorIndex);
-
-        return playerColors[randomIndex];
     }
 }

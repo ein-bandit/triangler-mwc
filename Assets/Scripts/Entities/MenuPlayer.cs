@@ -32,7 +32,8 @@ public class MenuPlayer : MonoBehaviour
     {
         readyText.enabled = true;
     }
-    public void SetPlayerColor(Color color, int playerIndex)
+
+    public void Init(Color color, int playerIndex)
     {
         this.playerColor = color;
         float startingPos = startingPlayerPosition + startingPlayerPositionStep * playerIndex;
