@@ -26,10 +26,7 @@ public class Projectile : MonoBehaviour
         _rigidbody.isKinematic = false;
         _rigidbody.velocity = Vector3.zero;
 
-        //reset y to avoid moving up/down of projectile.
-
         _rigidbody.AddForce(transform.forward * projectileSpeed, ForceMode.Impulse);
-        Debug.Log($"added velocity {transform.forward}");
     }
 
     private void OnTriggerEnter(Collider other)

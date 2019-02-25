@@ -11,9 +11,8 @@ public class Player : MonoBehaviour
     public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
 
-    private float resetMatrialColorDelay = 3f;
+    public float playerInvisibleDelay = .15f;
 
-    public float enableFeatureDelay = 2f;
 
     private Rigidbody _rigidbody;
     private Renderer _renderer;
@@ -41,7 +40,7 @@ public class Player : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playerManager = FindObjectOfType<PlayerManager>();
+        playerManager = GameManager.instance.GetComponent<PlayerManager>();
         _rigidbody = GetComponent<Rigidbody>();
         _renderer = GetComponentInChildren<Renderer>();
         _material = _renderer.material;
@@ -76,7 +75,6 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"collided with {other.tag} !");
         if (other.tag == "Wall")
         {
             ReflectPlayer(transform.forward, other.transform.forward);
@@ -216,6 +214,8 @@ public class Player : MonoBehaviour
     public void HitByProjectile()
     {
         started = false;
+        _rigidbody.isKinematic = true;
+        _rigidbody.velocity = Vector3.zero;
         StartCoroutine(DeathRotation());
         playerManager.SendMessageToClient(this, "hit");
     }
@@ -233,5 +233,8 @@ public class Player : MonoBehaviour
                     transform.rotation.z)
                 );
         }
+        yield return new WaitForSeconds(playerInvisibleDelay);
+        gameObject.SetActive(false);
+        playerManager.RegistratePlayerDeath(this);
     }
 }

@@ -11,12 +11,15 @@ using UnityEngine.SceneManagement;
 public class PlayerManager : MonoBehaviour
 {
     private Dictionary<Guid, PlayerHolder> players = new Dictionary<Guid, PlayerHolder>();
+    //convenience method to avoid iterating over players dict every time.
+    private Dictionary<Player, Guid> playerGuids = new Dictionary<Player, Guid>();
     private List<Color> playerColors = new List<Color>() { Color.cyan, Color.green, Color.red, Color.yellow };
     public GameObject playerPrefab;
     public GameObject projectilePrefab;
     public GameObject menuPlayerPrefab;
 
     public float startGameDelay = 3f;
+    public float endGameDelay = 5f;
 
     public int dummyPlayers = 0;
 
@@ -87,6 +90,15 @@ public class PlayerManager : MonoBehaviour
                 players[playerGuid].Player.gameObject.SetActive(true);
             }
         }
+        else if (newScene.name == "Menu")
+        {
+            foreach (Guid playerGuid in players.Keys)
+            {
+                players[playerGuid].Player.gameObject.SetActive(false);
+                players[playerGuid].MenuPlayer.gameObject.SetActive(true);
+                GameManager.instance.PlayerCountUpdate(players.Count);
+            }
+        }
         StartCoroutine(StartCountdown());
     }
 
@@ -112,39 +124,36 @@ public class PlayerManager : MonoBehaviour
 
     public void SendMessageToClient(Player player, string message)
     {
-        foreach (Guid playerGuid in players.Keys)
-        {
-            if (players[playerGuid].Player == player)
-            {
-                MobileWebController.instance.SendToClients(playerGuid, message);
-            }
-        }
+        if (players[playerGuids[player]].Dummy) return;
+
+        MobileWebController.instance.SendToClients(playerGuids[player], message);
     }
 
     public void RegisterPlayer(DataHolder playerInfo)
     {
+        Guid playerGuid = (Guid)playerInfo.data;
+        GameObject player = Instantiate(playerPrefab, transform);
+
+        Color playerColor = playerColors[players.Keys.Count];
+        GameObject projectile = Instantiate(projectilePrefab, transform);
+
+        player.GetComponent<Player>().Init(playerColor, projectile.GetComponent<Projectile>(), players.Keys.Count);
+        player.SetActive(false);
+
+        projectile.GetComponent<Projectile>().Init(player.GetComponent<Player>(), playerColor);
+        projectile.SetActive(false);
+
+        GameObject menuPlayer = Instantiate(menuPlayerPrefab, transform);
+        menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, players.Keys.Count);
+
+        players.Add(
+            playerGuid,
+            new PlayerHolder(player.GetComponent<Player>(), menuPlayer.GetComponent<MenuPlayer>())
+        );
+        playerGuids.Add(player.GetComponent<Player>(), playerGuid);
+
         if (SceneManager.GetActiveScene().name == "Menu")
         {
-            Guid playerGuid = (Guid)playerInfo.data;
-            GameObject player = Instantiate(playerPrefab, transform);
-
-            Color playerColor = playerColors[players.Keys.Count];
-            GameObject projectile = Instantiate(projectilePrefab, transform);
-
-            player.GetComponent<Player>().Init(playerColor, projectile.GetComponent<Projectile>(), players.Keys.Count);
-            player.SetActive(false);
-
-            projectile.GetComponent<Projectile>().Init(player.GetComponent<Player>(), playerColor);
-            projectile.SetActive(false);
-
-            GameObject menuPlayer = Instantiate(menuPlayerPrefab, transform);
-            menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, players.Keys.Count);
-
-            players.Add(
-                playerGuid,
-                new PlayerHolder(player.GetComponent<Player>(), menuPlayer.GetComponent<MenuPlayer>())
-            );
-
             GameManager.instance.PlayerCountUpdate(players.Keys.Count);
         }
     }
@@ -153,6 +162,7 @@ public class PlayerManager : MonoBehaviour
     {
         PlayerHolder player = players[(Guid)playerInfo.identifier];
         players.Remove((Guid)playerInfo.identifier);
+        playerGuids.Remove(player.Player);
         Destroy(player.Player.gameObject);
         Destroy(player.MenuPlayer.gameObject);
 
@@ -161,7 +171,6 @@ public class PlayerManager : MonoBehaviour
 
     public void ReceivePlayerInput(DataHolder data)
     {
-        Debug.Log(players.ContainsKey((Guid)data.identifier));
         if (players.ContainsKey((Guid)data.identifier))
         {
             PlayerHolder player = players[(Guid)data.identifier];
@@ -187,5 +196,37 @@ public class PlayerManager : MonoBehaviour
         }
 
         GameManager.instance.AdvanceToGame();
+    }
+
+    public void RegistratePlayerDeath(Player player)
+    {
+        Guid id = playerGuids[player];
+        PlayerHolder ph = players[id];
+        ph.Ready = false; //because player died.
+        players[id] = ph; //necessary?
+        CheckRemainingPlayers();
+    }
+
+    private void CheckRemainingPlayers()
+    {
+        int playersAlive = players.Keys.Count;
+        foreach (PlayerHolder ph in players.Values)
+        {
+            if (ph.Ready == false)
+            {
+                playersAlive--;
+            }
+        }
+        if (playersAlive <= 1)
+        {
+            StartCoroutine(EndGame());
+        }
+    }
+
+    private IEnumerator EndGame()
+    {
+        Debug.Log("Game over!");
+        yield return new WaitForSeconds(endGameDelay);
+        SceneManager.LoadScene("Menu");
     }
 }
