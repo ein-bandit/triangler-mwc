@@ -69,11 +69,6 @@ namespace MobileWebControl
             webRTCServer = new WebRTCServer(webRTCPort);
             Debug.Log($"created websocket on port {webRTCPort}.");
 
-            //handler methods get called from another thread.
-            webRTCServer.OnReceiveDataMessage += OnReceiveData;
-            webRTCServer.OnReceiveBinaryDataMessage += OnReceiveBinaryData;
-            webRTCServer.OnRegisterClient += OnRegisterClient;
-            webRTCServer.OnUnregisterClient += OnUnregisterClient;
 
             if (InterpreterClassName.Length == 0)
             {
@@ -87,7 +82,7 @@ namespace MobileWebControl
             }
         }
 
-        public void OnReceiveData(IComparable identifier, string message)
+        public void OnReceiveStringData(IComparable identifier, string message)
         {
             if (CheckRetrievedMessage(message))
             {

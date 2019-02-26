@@ -10,7 +10,7 @@ public class MenuController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        playersCountText.text = "0";
+
     }
 
     // Update is called once per frame

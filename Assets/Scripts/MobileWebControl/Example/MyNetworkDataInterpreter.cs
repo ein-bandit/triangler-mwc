@@ -111,8 +111,8 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
         switch (type)
         {
             case InputDataType.orientation:
-                return new Vector3(float.Parse(data["a"].ToString()) * -1,
-                                    float.Parse(data["b"].ToString()) * -1,
+                return new Vector3(float.Parse(data["a"].ToString()),
+                                    float.Parse(data["b"].ToString()),
                                     float.Parse(data["c"].ToString()));
             case InputDataType.tap:
                 return data.ToString();

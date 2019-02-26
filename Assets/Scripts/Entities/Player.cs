@@ -34,8 +34,8 @@ public class Player : MonoBehaviour
     private float currentRotation = 0f;
 
     private Color playerColor;
-    private float initalRotationX = float.MinValue;
-    private float maxRotationX = 50;
+    private float sinInitialRotation = float.MinValue;
+    private float steeringRangeInPercent = .25f;
 
     private bool started = false;
 
@@ -107,15 +107,16 @@ public class Player : MonoBehaviour
         switch (type)
         {
             case InputDataType.orientation:
-                if (initalRotationX == float.MinValue)
+                if (sinInitialRotation == float.MinValue)
                 {
-                    initalRotationX = ((Vector3)inputData).x;
+                    sinInitialRotation = Mathf.Cos(((Vector3)inputData).x * Mathf.Deg2Rad);
                     //phone was initialized in default position - game can start.
                 }
-                float rotationX = ((Vector3)inputData).x - initalRotationX;
-                //get float from -1 to 1. (lerp to new rotation ?)
-                currentRotation = Mathf.Clamp(rotationX, -maxRotationX, maxRotationX) / maxRotationX;
-                //Debug.Log($"calculated deviceorientation {rotationX}, {currentRotation}");
+                //TODO: find a fix for holding phone inverted.
+                float sinRotation = Mathf.Cos(((Vector3)inputData).x * Mathf.Deg2Rad);
+
+                currentRotation = Mathf.Clamp(sinRotation - sinInitialRotation, -steeringRangeInPercent, steeringRangeInPercent) / steeringRangeInPercent;
+                Debug.Log($"calculated deviceorientation {((Vector3)inputData).x}, {sinRotation} - {sinInitialRotation} : +-{steeringRangeInPercent}= {currentRotation}");
                 break;
             case InputDataType.tap:
                 //Debug.Log($"received string {(string)inputData}");
@@ -138,12 +139,9 @@ public class Player : MonoBehaviour
                             projectileReady = false;
                         }
                         break;
-                    case "ready": //is handled in playermanager;
-                        Debug.Log("should already be handled in playermanager");
-                        break;
                     case "reset-orientation":
                         //reset position if something went wrong?
-                        initalRotationX = ((Vector3)inputData).x;
+                        sinInitialRotation = ((Vector3)inputData).x;
                         break;
                     default:
                         //do nothing, tap not recognized.
@@ -248,5 +246,10 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(playerDeathResetDelay);
         gameObject.SetActive(false);
         playerManager.RegistratePlayerDeath(this);
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(projectile);
     }
 }

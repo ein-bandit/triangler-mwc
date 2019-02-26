@@ -146,15 +146,7 @@ namespace MobileWebControl.WebRTC
         {
             UnityEngine.Debug.Log($"OnDisconnect: {context.ConnectionInfo.Id}, {context.ConnectionInfo.ClientIpAddress}");
 
-            if (OnUnregisterClient == null)
-            {
-                UnityEngine.Debug.LogError("You have not set a listener for unregister client callback");
-            }
-            else
-            {
-                //var temp = NetworkEventDispatcher.instance;
-                OnUnregisterClient(context.ConnectionInfo.Id);
-            }
+            MobileWebController.instance.OnUnregisterClient(context.ConnectionInfo.Id);
 
             IWebSocketConnection ctx;
             UserList.TryRemove(context.ConnectionInfo.Id, out ctx);
@@ -170,9 +162,14 @@ namespace MobileWebControl.WebRTC
         public const string offer = "offer";
         public const string onicecandidate = "onicecandidate";
 
-        public void SendWebRTCMessage(IComparable guid, string message)
+        public void SendWebRTCMessage(IComparable identifier, string message)
         {
-            Streams[(Guid)guid].WebRtc.DataChannelSendText(message);
+            Streams[(Guid)identifier].WebRtc.DataChannelSendText(message);
+        }
+
+        public void SendWebRTCMessage(IComparable identifier, byte[] message)
+        {
+            Streams[(Guid)identifier].WebRtc.DataChannelSendData(message, message.Length);
         }
 
         private void OnReceive(IWebSocketConnection context, string msg)
@@ -192,14 +189,8 @@ namespace MobileWebControl.WebRTC
                             if (UserList.Count <= ClientLimit && !Streams.ContainsKey(context.ConnectionInfo.Id))
                             {
                                 var session = Streams[context.ConnectionInfo.Id] = new WebRtcSession();
-                                if (OnRegisterClient == null)
-                                {
-                                    UnityEngine.Debug.LogError("You have not set a listener for register client callback");
-                                }
-                                else
-                                {
-                                    OnRegisterClient(context.ConnectionInfo.Id);
-                                }
+
+                                MobileWebController.instance.OnRegisterClient(context.ConnectionInfo.Id);
 
                                 using (var go = new ManualResetEvent(false))
                                 {
@@ -279,12 +270,12 @@ namespace MobileWebControl.WebRTC
                                         session.WebRtc.OnDataMessage += delegate (string dmsg)
                                         {
                                             //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
-                                            OnReceiveDataMessage(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.instance.OnReceiveStringData(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
                                         {
-                                            OnReceiveBinaryDataMessage(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.instance.OnReceiveBinaryData(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         // session.WebRtc.OnRenderRemote += delegate (IntPtr BGR24, uint w, uint h)
@@ -325,20 +316,6 @@ namespace MobileWebControl.WebRTC
                 }
             }
         }
-
-        public delegate void OnCallbackReceivedDataMessage(IComparable identifier, string message);
-        public event OnCallbackReceivedDataMessage OnReceiveDataMessage;
-
-        public delegate void OnCallbackReceivedBinaryDataMessage(IComparable identifier, byte[] message);
-        public event OnCallbackReceivedBinaryDataMessage OnReceiveBinaryDataMessage;
-
-
-        public delegate void OnCallbackRegisterClient(IComparable identifier);
-        public event OnCallbackRegisterClient OnRegisterClient;
-
-        public delegate void OnCallbackUnregisterClient(IComparable identifier);
-        public event OnCallbackUnregisterClient OnUnregisterClient;
-
 
         public void Dispose()
         {

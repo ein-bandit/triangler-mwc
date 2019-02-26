@@ -21,7 +21,10 @@ public class MenuPlayer : MonoBehaviour
         _material = GetComponentInChildren<Renderer>().material;
 
         _material.color = this.playerColor;
+    }
 
+    private void OnEnable()
+    {
         if (SceneManager.GetActiveScene().name == "Menu")
         {
             readyText = FindObjectOfType<Canvas>().transform.Find("PlayersReady").Find(this.playerIndex.ToString()).GetComponent<Text>();

@@ -167,7 +167,7 @@ function setupWebRTC(dataChannelSetupCallback) {
         console.log("onicecandidate[local skip]: " + event.candidate.candidate);
       }
     } else {
-      console.log("onicecandidate: complete.");
+      console.log("onicecandidate: complete." + JSON.stringify(event));
 
       if (remoteAnswer) {
         // fill empty pairs using last remote ice

@@ -23,6 +23,8 @@ public class PlayerManager : MonoBehaviour
 
     public int dummyPlayers = 0;
 
+    public float playerReadyDelay = 3f;
+
     private void Update()
     {
         if (Input.GetKeyUp(KeyCode.Space) && players.Count > 0)
@@ -50,7 +52,6 @@ public class PlayerManager : MonoBehaviour
                 Guid g = new Guid("00000000-0000-0000-0000-00000000000" + i);
                 StartCoroutine(RegisterDummy(g));
             }
-
         }
     }
 
@@ -88,7 +89,9 @@ public class PlayerManager : MonoBehaviour
             {
                 players[playerGuid].MenuPlayer.gameObject.SetActive(false);
                 players[playerGuid].Player.gameObject.SetActive(true);
+                StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.game_start));
             }
+            StartCoroutine(StartCountdown());
         }
         else if (newScene.name == "Menu")
         {
@@ -96,10 +99,12 @@ public class PlayerManager : MonoBehaviour
             {
                 players[playerGuid].Player.gameObject.SetActive(false);
                 players[playerGuid].MenuPlayer.gameObject.SetActive(true);
-                GameManager.instance.PlayerCountUpdate(players.Count);
+                Debug.Log("scene changed");
+                StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.ready, playerReadyDelay));
             }
+            Debug.Log($"updating gui to player nr {players.Keys.Count}");
+            GameManager.instance.PlayerCountUpdate(players.Keys.Count);
         }
-        StartCoroutine(StartCountdown());
     }
 
     private IEnumerator StartCountdown()
@@ -129,6 +134,11 @@ public class PlayerManager : MonoBehaviour
         MobileWebController.instance.SendToClients(playerGuids[player], message);
     }
 
+    private void SendMessageToClient(Guid guid, string message)
+    {
+        MobileWebController.instance.SendToClients(guid, message);
+    }
+
     public void RegisterPlayer(DataHolder playerInfo)
     {
         Guid playerGuid = (Guid)playerInfo.data;
@@ -145,6 +155,7 @@ public class PlayerManager : MonoBehaviour
 
         GameObject menuPlayer = Instantiate(menuPlayerPrefab, transform);
         menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, players.Keys.Count);
+        menuPlayer.SetActive(false);
 
         players.Add(
             playerGuid,
@@ -154,12 +165,16 @@ public class PlayerManager : MonoBehaviour
 
         if (SceneManager.GetActiveScene().name == "Menu")
         {
+            menuPlayer.SetActive(true);
             GameManager.instance.PlayerCountUpdate(players.Keys.Count);
+
+            StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.ready, playerReadyDelay));
         }
     }
 
     public void UnregisterPlayer(DataHolder playerInfo)
     {
+        Debug.Log("unregister player");
         PlayerHolder player = players[(Guid)playerInfo.identifier];
         players.Remove((Guid)playerInfo.identifier);
         playerGuids.Remove(player.Player);
@@ -181,7 +196,9 @@ public class PlayerManager : MonoBehaviour
         if (players.ContainsKey((Guid)data.identifier))
         {
             PlayerHolder player = players[(Guid)data.identifier];
-            if (((InputDataType)data.type).Equals(InputDataType.ready))
+
+            if (SceneManager.GetActiveScene().name == "Menu"
+                && ((InputDataType)data.type).Equals(InputDataType.ready))
             {
                 player.Ready = true;
                 player.MenuPlayer.SetReady();
@@ -192,6 +209,10 @@ public class PlayerManager : MonoBehaviour
             {
                 player.Player.ReceiveInput((InputDataType)data.type, data.data);
             }
+        }
+        else
+        {
+            Debug.Log($"could not handle message of unknown client. {data.identifier}");
         }
     }
     private void CheckAllPlayersReady()
@@ -212,6 +233,7 @@ public class PlayerManager : MonoBehaviour
         ph.Ready = false; //because player died.
         players[id] = ph; //necessary?
         CheckRemainingPlayers();
+        SendNewPlayerStatus(id, PlayerStatus.game_over);
     }
 
     private void CheckRemainingPlayers()
@@ -224,12 +246,13 @@ public class PlayerManager : MonoBehaviour
                 alive.Add(ph.Player);
             }
         }
+
         if (alive.Count <= 1)
         {
-            foreach (Player p in alive)
+            foreach (Player player in alive)
             {
-                p.DisablePlayer();
-                this.SendMessageToClient(p, "stop");
+                player.DisablePlayer();
+                SendNewPlayerStatus(playerGuids[player], PlayerStatus.game_winner);
             }
             StartCoroutine(EndGame());
         }
@@ -241,5 +264,11 @@ public class PlayerManager : MonoBehaviour
         FindObjectOfType<Canvas>().transform.Find("End").gameObject.SetActive(true);
         yield return new WaitForSeconds(endGameDelay);
         SceneManager.LoadScene("Menu");
+    }
+
+    private IEnumerator SendNewPlayerStatus(Guid player, PlayerStatus status, float delay = 0f)
+    {
+        yield return new WaitForSeconds(delay);
+        SendMessageToClient(player, status.ToString());
     }
 }
