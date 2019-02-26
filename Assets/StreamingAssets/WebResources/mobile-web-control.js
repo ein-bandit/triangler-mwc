@@ -32,6 +32,7 @@ function updateScene(mode) {
     contentElement.classList.remove("hidden");
     gameStarted = true;
   } else if (mode === "ready") {
+    deactivateNoSleep();
     connectElement.classList.add("hidden");
     readyElement.classList.remove("hidden");
 
@@ -43,6 +44,7 @@ function updateScene(mode) {
       dataElement.classList.remove("hidden");
     }
   } else if (mode === "connect") {
+    deactivateNoSleep();
     connecting = false; //disconnect occurred.
     gameStarted = false;
     connectElement.classList.remove("hidden");
@@ -132,6 +134,8 @@ function handleReadyClick() {
   readyElement.classList.add("disabled");
 
   readyBtn.innerHTML = "waiting";
+
+  activateNoSleep();
 
   dataChannel.send(JSON.stringify({ type: "ready", data: "ready" }));
 }

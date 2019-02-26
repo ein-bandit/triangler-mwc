@@ -111,3 +111,13 @@ function addAvailableFeatureMessage(message) {
   feature.appendChild(featureMessage);
   featureDisplayArea.appendChild(feature);
 }
+
+//TODO: consider using HTML5 API WakeLock.
+var noSleep = new NoSleep();
+
+function activateNoSleep() {
+  noSleep.enable();
+}
+function deactivateNoSleep() {
+  noSleep.disable();
+}
