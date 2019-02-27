@@ -7,6 +7,7 @@ using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class PlayerManager : MonoBehaviour
     public GameObject projectilePrefab;
     public GameObject menuPlayerPrefab;
 
-    public float startGameDelay = 3f;
+    public int startGameDelayInSeconds = 3;
     public float endGameDelay = 5f;
 
     public int dummyPlayers = 0;
@@ -62,7 +63,7 @@ public class PlayerManager : MonoBehaviour
         RegisterPlayer(d);
 
         PlayerHolder ph = players[g];
-        ph.Dummy = true;
+        ph.AI = true;
         players[g] = ph;
     }
     private IEnumerator DummyStart(Guid g)
@@ -109,33 +110,44 @@ public class PlayerManager : MonoBehaviour
 
     private IEnumerator StartCountdown()
     {
-        yield return new WaitForSeconds(startGameDelay);
+        Text countdownText = FindObjectOfType<Canvas>().transform.Find("Countdown").GetComponent<Text>();
+        int count = startGameDelayInSeconds;
+        do
+        {
+            countdownText.text = count.ToString();
+            count--;
+            yield return new WaitForSeconds(1f);
+        } while (count > 0);
         //show Countdown;
         foreach (Guid playerGuid in players.Keys)
         {
             Debug.Log("starting game");
             players[playerGuid].Player.StartPlayerMovement();
         }
+
+        countdownText.text = "GO!";
+        yield return new WaitForSeconds(.75f);
+        countdownText.gameObject.SetActive(false);
     }
 
     public void SendMessageToAllClients(string message)
     {
         foreach (Guid playerGuid in players.Keys)
         {
-            if (players[playerGuid].Dummy == true) return;
+            if (players[playerGuid].AI == true) return;
             MobileWebController.instance.SendToClients(playerGuid, message);
         }
     }
 
     public void SendMessageToClient(Player player, string message)
     {
-        if (players[playerGuids[player]].Dummy) return;
-
         MobileWebController.instance.SendToClients(playerGuids[player], message);
     }
 
     private void SendMessageToClient(Guid guid, string message)
     {
+        if (players[guid].AI == true) return;
+
         MobileWebController.instance.SendToClients(guid, message);
     }
 
