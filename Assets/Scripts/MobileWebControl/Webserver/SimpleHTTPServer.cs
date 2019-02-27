@@ -90,6 +90,8 @@ namespace MobileWebControl.Webserver
         private int _port;
         private string _hostAddress;
 
+        private bool _isAlive;
+
         public string PublicIPAddress
         {
             get
@@ -132,6 +134,7 @@ namespace MobileWebControl.Webserver
         /// </summary>
         public void Stop()
         {
+            _isAlive = false;
             _listener.Stop();
             _serverThread.Abort();
         }
@@ -141,7 +144,7 @@ namespace MobileWebControl.Webserver
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://*:" + _port.ToString() + "/");
             _listener.Start();
-            while (true)
+            while (_isAlive)
             {
                 try
                 {

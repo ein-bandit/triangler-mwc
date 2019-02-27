@@ -67,7 +67,7 @@ namespace MobileWebControl.NetworkData
         }
 
         //trigger event is called from another thread when data is received.
-        //with the dispatcher triggerEvent waits for unity to be ready and sends event immediately.
+        //with the dispatcher triggerEvent waits for unity to be ready and sends all events on update immediately.
         public static void TriggerEvent(NetworkEventType eventType, DataHolder data)
         {
             AsyncEvent thisEvent = null;
@@ -78,6 +78,11 @@ namespace MobileWebControl.NetworkData
                     thisEvent.Invoke(data);
                 });
             }
+        }
+
+        public static void ClearEventDictionary()
+        {
+            instance.eventDictionary.Clear();
         }
     }
 }

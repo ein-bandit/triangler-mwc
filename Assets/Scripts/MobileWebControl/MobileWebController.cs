@@ -30,6 +30,8 @@ namespace MobileWebControl
         private static SimpleHTTPServer webserver;
         public static int webserverPort = 8880;
 
+        private bool isAlive = true;
+
         public static string webServerAddress
         {
             get
@@ -38,10 +40,7 @@ namespace MobileWebControl
             }
         }
 
-        private NetworkEventDispatcher networkEventDispatcher;
-
         //private static readonly String WebResourcesLocation = "WebResources";
-
 
         public static MobileWebController instance;
         void Awake()
@@ -86,10 +85,10 @@ namespace MobileWebControl
         {
             if (CheckRetrievedMessage(message))
             {
-                //UnityEngine.Debug.Log($"received data {identifier},{message}");
-                DataHolder data = interpreter.InterpretStringData(identifier, message);
-
-                NetworkEventDispatcher.TriggerEvent(NetworkEventType.Network_Input_Event, data);
+                PassReceivedMessage(
+                    NetworkEventType.Network_Input_Event,
+                    interpreter.InterpretStringData(identifier, message)
+                );
             }
         }
 
@@ -100,18 +99,18 @@ namespace MobileWebControl
 
         public void OnRegisterClient(IComparable identifier)
         {
-            //Debug.Log("received a new player: " + identifier);
-            DataHolder data = interpreter.RegisterClient(identifier);
-
-            NetworkEventDispatcher.TriggerEvent(NetworkEventType.Register_Player, data);
+            PassReceivedMessage(
+                NetworkEventType.Register_Player,
+                interpreter.RegisterClient(identifier)
+            );
         }
 
         public void OnUnregisterClient(IComparable identifier)
         {
-            //Debug.Log("unregister player: " + identifier);
-            DataHolder data = interpreter.UnregisterClient(identifier);
-
-            NetworkEventDispatcher.TriggerEvent(NetworkEventType.Unregister_Player, data);
+            PassReceivedMessage(
+                NetworkEventType.Unregister_Player,
+                interpreter.UnregisterClient(identifier)
+            );
         }
 
         private bool CheckRetrievedMessage(string message)
@@ -124,6 +123,12 @@ namespace MobileWebControl
             return true;
         }
 
+        private void PassReceivedMessage(NetworkEventType eventType, DataHolder data)
+        {
+            if (!isAlive) return;
+            NetworkEventDispatcher.TriggerEvent(eventType, data);
+        }
+
         public void SendToClients(IComparable identifier, string message)
         {
             webRTCServer.SendWebRTCMessage(identifier, message);
@@ -131,6 +136,9 @@ namespace MobileWebControl
 
         private void OnApplicationQuit()
         {
+            instance.isAlive = false;
+            NetworkEventDispatcher.ClearEventDictionary();
+
             Debug.Log("shutting down.");
             webRTCServer.Dispose();
             webserver.Stop();
