@@ -31,7 +31,8 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if ((IPlayer)other.GetComponent<Player>() == player)
+        if ((IPlayer)other.GetComponent<Player>() == player
+        || (IPlayer)other.GetComponent<AIPlayer>() == player)
         {
             return;
         }
@@ -54,6 +55,7 @@ public class Projectile : MonoBehaviour
         gameObject.SetActive(false);
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.isKinematic = true;
+        player.ProjectileDetonated();
     }
 
     public void Initialize(IPlayer player)

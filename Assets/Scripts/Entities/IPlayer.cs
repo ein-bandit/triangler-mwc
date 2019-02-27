@@ -8,4 +8,5 @@ public interface IPlayer
     bool isAIControlled();
     void DestroyMe();
     void ActivatePlayerObject(bool active);
+    void ProjectileDetonated();
 }

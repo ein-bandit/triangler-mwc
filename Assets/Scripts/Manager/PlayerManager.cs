@@ -221,7 +221,7 @@ public class PlayerManager : MonoBehaviour
 
     public void HandlePlayerDeath(IPlayer player)
     {
-        SetPlayerReady(player);
+        SetPlayerReady(player, false);
 
         CheckRemainingPlayers();
         if (!player.isAIControlled())
@@ -256,10 +256,10 @@ public class PlayerManager : MonoBehaviour
         SendMessageToClient(playerGuid, status.ToString());
     }
 
-    private void SetPlayerReady(IPlayer player)
+    private void SetPlayerReady(IPlayer player, bool readyAndAlive = true)
     {
         PlayerConstraints pc = playerConstraints[player];
-        pc.SetReadyAndAlive(true);
+        pc.SetReadyAndAlive(readyAndAlive);
         playerConstraints[player] = pc;
     }
 }

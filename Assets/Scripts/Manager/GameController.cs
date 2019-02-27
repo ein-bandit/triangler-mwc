@@ -23,7 +23,7 @@ public class GameController : MonoBehaviour
 
     public IEnumerator ShowEnd(string winner)
     {
-        gameEnd.text = "Game over. <" + winner + " won!>";
+        gameEnd.text = "Game over. <" + (winner == null ? "AI" : winner) + " won!>";
         gameEnd.gameObject.SetActive(true);
         yield return new WaitForSeconds(endGameDelay);
         GameManager.instance.AdvanceToMenu();

@@ -16,7 +16,7 @@ public struct PlayerConstraints
     public void SetReadyAndAlive(bool ready)
     {
         this.readyAndAlive = ready;
-        this.menuPlayer.SetReady(ready);
+        if (ready) this.menuPlayer.SetReady(ready);
     }
 
     public MenuPlayer MenuPlayer { get => menuPlayer; }

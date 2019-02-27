@@ -35,7 +35,7 @@ public class AIPlayer : PlayerMovement, IPlayer
 
     public int maxActionRandom = 100;
     [Range(0f, 1f)]
-    public float shootProbability = .25f;
+    public float shootProbability = .8f;
     [Range(0f, 1f)]
     public float boostProbability = .5f;
     [Range(0f, 1f)]
@@ -51,8 +51,8 @@ public class AIPlayer : PlayerMovement, IPlayer
     void Start()
     {
         playerManager = GameManager.instance.GetComponent<PlayerManager>();
-        _renderer = transform.Find("body").GetComponent<Renderer>();
-        _noseRenderer = transform.Find("head").GetComponent<Renderer>();
+        _renderer = GetComponent<Renderer>();
+        _noseRenderer = transform.Find("nose").GetComponent<Renderer>();
         _material = _renderer.material;
 
         _material.color = this.playerColor;
@@ -153,7 +153,7 @@ public class AIPlayer : PlayerMovement, IPlayer
         canBoost = true;
     }
 
-    private void ResetProjectileReady()
+    public void ProjectileDetonated()
     {
         projectileReady = true;
     }

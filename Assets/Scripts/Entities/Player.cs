@@ -31,8 +31,8 @@ public class Player : PlayerMovement, IPlayer
     void Start()
     {
         playerManager = GameManager.instance.GetComponent<PlayerManager>();
-        _renderer = transform.Find("body").GetComponent<Renderer>();
-        _noseRenderer = transform.Find("head").GetComponent<Renderer>();
+        _renderer = GetComponent<Renderer>();
+        _noseRenderer = transform.Find("nose").GetComponent<Renderer>();
         _material = _renderer.material;
 
         _material.color = this.playerColor;
@@ -149,7 +149,7 @@ public class Player : PlayerMovement, IPlayer
         canBoost = true;
     }
 
-    private void ResetProjectileReady()
+    public void ProjectileDetonated()
     {
         projectileReady = true;
     }
