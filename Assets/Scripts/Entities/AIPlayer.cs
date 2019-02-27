@@ -90,19 +90,19 @@ public class AIPlayer : PlayerMovement, IPlayer
                 }
 
                 float randomWaitTime = Random.Range(calculateActionTimeStepMin, calculateActionTimeStepMax);
-                Debug.Log($"AI waiting{randomWaitTime}");
+                Debug.Log($"AI waiting {randomWaitTime}");
                 yield return new WaitForSeconds(randomWaitTime);
             }
             else
             {
+                Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.red);
                 if (!blockSteering && Random.Range(0f, maxActionRandom * steeringProbability) <= maxActionRandom * steeringProbability)
                 {
-                    Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.red);
                     currentRotation = Random.Range(-1f, 1f);
 
                     float waitTime = Random.Range(calculateActionTimeStepMin, calculateActionTimeStepMax);
 
-                    Debug.Log($"AI steering and waiting {waitTime}");
+                    //Debug.Log($"AI reenable steering in {waitTime}");
                     blockSteering = true;
                     Invoke("ResetBlockSteering", waitTime);
                 }

@@ -223,6 +223,7 @@ namespace MobileWebControl.Webserver
             this._hostAddress = GetPublicIPAddress();
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
+            _isAlive = true;
         }
 
         private string GetPublicIPAddress()

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 960018170930642918}
   m_Layer: 0
   m_Name: body
-  m_TagString: Player
+  m_TagString: AIPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -105,7 +105,7 @@ GameObject:
   - component: {fileID: 5914786614094474167}
   m_Layer: 0
   m_Name: head
-  m_TagString: Untagged
+  m_TagString: AIPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -182,7 +182,7 @@ GameObject:
   - component: {fileID: 4183771242647578963}
   m_Layer: 0
   m_Name: AIPlayer
-  m_TagString: Player
+  m_TagString: AIPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -223,10 +223,10 @@ MonoBehaviour:
   stealthActiveTime: 2
   playerDeathResetDelay: 0.15
   maxActionRandom: 24
-  shootModulo: 4
-  boostModulo: 6
-  stealthModulo: 8
-  steeringModulo: 12
+  shootProbability: 0.25
+  boostProbability: 0.5
+  stealthProbability: 0.1
+  steeringProbability: 0.75
   calculateActionTimeStepMin: 0.25
   calculateActionTimeStepMax: 5
 --- !u!54 &4183771242647578963
