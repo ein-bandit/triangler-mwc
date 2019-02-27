@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct PlayerHolder
+public struct PlayerConstraints
 {
-    private bool ready;
-    private bool isAI;
-    private Player player;
+    private bool readyAndAlive;
     private MenuPlayer menuPlayer;
 
-    public PlayerHolder(Player player, MenuPlayer menuPlayer)
+    public PlayerConstraints(MenuPlayer menuPlayer)
     {
-        this.ready = false;
-        this.player = player;
+        this.readyAndAlive = false;
         this.menuPlayer = menuPlayer;
-        this.isAI = false;
     }
 
-    public Player Player { get => player; }
+    public void SetReadyAndAlive(bool ready)
+    {
+        this.readyAndAlive = ready;
+        this.menuPlayer.SetReady(ready);
+    }
+
     public MenuPlayer MenuPlayer { get => menuPlayer; }
-    public bool Ready { get => ready; set => ready = value; }
-    public bool AI { get => isAI; set => isAI = value; }
+    public bool ReadyAndAlive { get => readyAndAlive; set => readyAndAlive = value; }
 }

@@ -3,19 +3,15 @@ using System.Collections.Generic;
 using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : PlayerMovement, IPlayer
 {
-    public float speedForce = 10f;
-    public float rotationSpeed = 5f;
-    public float boostForce = 15f;
     public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
     public float stealthActiveTime = 2f;
-
     public float playerDeathResetDelay = .15f;
+    public float projectileResetDelay = 1f;
 
 
-    private Rigidbody _rigidbody;
     private Renderer _renderer;
     private Renderer _noseRenderer;
     private Material _material;
@@ -23,27 +19,18 @@ public class Player : MonoBehaviour
 
     private Projectile projectile;
 
-
-    private bool boostActivated = false;
     private bool canBoost = false;
-
     private bool canActivateStealth = false;
-
     private bool projectileReady = false;
-
-    private float currentRotation = 0f;
 
     private Color playerColor;
     private float sinInitialRotation = float.MinValue;
     private float steeringRangeInPercent = .25f;
 
-    private bool started = false;
-
     // Start is called before the first frame update
     void Start()
     {
         playerManager = GameManager.instance.GetComponent<PlayerManager>();
-        _rigidbody = GetComponent<Rigidbody>();
         _renderer = transform.Find("body").GetComponent<Renderer>();
         _noseRenderer = transform.Find("head").GetComponent<Renderer>();
         _material = _renderer.material;
@@ -55,50 +42,14 @@ public class Player : MonoBehaviour
     {
         if (projectile && Input.GetKeyUp(KeyCode.F))
         {
-            projectile.Fire();
-        }
-    }
-    void FixedUpdate()
-    {
-        if (started)
-        {
-            _rigidbody.AddForce(transform.forward * speedForce);
-
-            if (canBoost && boostActivated)
-            {
-                boostActivated = false;
-                canBoost = false;
-                Invoke("ReactivateBoost", reactivateBoostTime);
-                _rigidbody.AddForce(transform.forward * boostForce, ForceMode.Impulse);
-            }
-
-            _rigidbody.AddRelativeTorque(transform.up * rotationSpeed * currentRotation, ForceMode.Force);
+            projectile.Fire(transform.position, transform.rotation);
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void StartMovement()
     {
-        if (other.tag == "Wall")
-        {
-            ReflectPlayer(transform.forward, other.transform.forward);
-        }
-        else if (other.tag == "Player")
-        {
-            ReflectPlayer(transform.forward, transform.position - other.transform.position);
-        }
-    }
-
-    private void ReflectPlayer(Vector3 forward, Vector3 normal)
-    {
-        transform.rotation = Quaternion.LookRotation(Vector3.Reflect(forward, normal));
-        _rigidbody.velocity = Vector3.zero;
-        _rigidbody.AddForce(transform.forward * speedForce, ForceMode.Impulse);
-    }
-
-    public void StartPlayerMovement()
-    {
-        started = true;
         EnableFeatures();
+        ActivateMovement();
     }
 
     public void ReceiveInput(InputDataType type, object inputData)
@@ -116,7 +67,7 @@ public class Player : MonoBehaviour
                 float sinRotation = Mathf.Cos(((Vector3)inputData).x * Mathf.Deg2Rad);
 
                 currentRotation = Mathf.Clamp(sinRotation - sinInitialRotation, -steeringRangeInPercent, steeringRangeInPercent) / steeringRangeInPercent;
-                Debug.Log($"calculated deviceorientation {((Vector3)inputData).x}, {sinRotation} - {sinInitialRotation} : +-{steeringRangeInPercent}= {currentRotation}");
+                //Debug.Log($"calculated deviceorientation {((Vector3)inputData).x}, {sinRotation} - {sinInitialRotation} : +-{steeringRangeInPercent}= {currentRotation}");
                 break;
             case InputDataType.tap:
                 //Debug.Log($"received string {(string)inputData}");
@@ -125,17 +76,21 @@ public class Player : MonoBehaviour
                     case "tap-area-boost":
                         if (canBoost)
                         {
-                            boostActivated = true;
+                            boostActive = true;
+                            canBoost = false;
+                            Invoke("ReactivateBoost", reactivateBoostTime);
                         }
                         break;
                     case "tap-area-stealth":
-                        EnableStealth();
+                        if (canActivateStealth)
+                        {
+                            EnableStealth();
+                        }
                         break;
                     case "tap-area-fire":
                         if (projectileReady)
                         {
-                            Debug.Log("firing projectile");
-                            projectile.Fire();
+                            projectile.Fire(transform.position, transform.rotation);
                             projectileReady = false;
                         }
                         break;
@@ -163,26 +118,18 @@ public class Player : MonoBehaviour
 
     private void EnableStealth()
     {
-        if (canActivateStealth && started)
-        {
-            _renderer.enabled = false;
-            _noseRenderer.enabled = false;
-            canActivateStealth = false;
-            Invoke("ResetInvisible", stealthActiveTime);
-        }
+        _renderer.enabled = false;
+        _noseRenderer.enabled = false;
+        canActivateStealth = false;
+        Invoke("ResetInvisible", stealthActiveTime);
     }
 
-    public void Init(Color color, Projectile projectile, int index)
+    public void Initialize(Color color, Projectile projectile, int index)
     {
         this.playerColor = color;
         this.projectile = projectile;
 
-        transform.rotation = Quaternion.Euler(0f, 90 * index, 0f);
-        transform.position = transform.position + new Vector3(
-            transform.forward.x * transform.localScale.x * 2,
-            transform.forward.y * transform.localScale.y * 2,
-            transform.forward.z * transform.localScale.z * 2
-        );
+        InitializeMovement(index);
     }
 
     private void ResetInvisible()
@@ -216,40 +163,45 @@ public class Player : MonoBehaviour
 
     public void HitByProjectile()
     {
-        started = false;
-        _rigidbody.isKinematic = true;
-        _rigidbody.velocity = Vector3.zero;
+        DeactivateMovement();
         StartCoroutine(DeathRotation());
         playerManager.SendMessageToClient(this, "hit");
     }
 
+    public void ActivatePlayerObject(bool active)
+    {
+        gameObject.SetActive(active);
+    }
     public void DisablePlayer()
     {
-        started = false;
-        _rigidbody.velocity = Vector3.zero;
-        _rigidbody.isKinematic = true;
+        DeactivateMovement();
     }
 
     private IEnumerator DeathRotation()
     {
-        int step = 6;
-        for (int i = 0; i <= 360 / step; i++)
-        {
-            yield return new WaitForEndOfFrame();
-            transform.rotation = Quaternion.Euler(
-                new Vector3(
-                    transform.rotation.x,
-                    transform.rotation.y + (i * step),
-                    transform.rotation.z)
-                );
-        }
+        ExecuteDeathRotation();
         yield return new WaitForSeconds(playerDeathResetDelay);
         gameObject.SetActive(false);
-        playerManager.RegistratePlayerDeath(this);
+        playerManager.HandlePlayerDeath(this);
+    }
+
+    public void DestroyMe()
+    {
+        Destroy(gameObject);
     }
 
     private void OnDestroy()
     {
         Destroy(projectile);
+    }
+
+    public bool isAIControlled()
+    {
+        return false;
+    }
+
+    public string GetUIIdentifier()
+    {
+        return playerColor.ToString();
     }
 }

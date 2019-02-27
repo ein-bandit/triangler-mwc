@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using MobileWebControl;
 using MobileWebControl.NetworkData;
 using MobileWebControl.NetworkData.InputData;
@@ -11,30 +12,31 @@ using UnityEngine.UI;
 
 public class PlayerManager : MonoBehaviour
 {
-    private Dictionary<Guid, PlayerHolder> players = new Dictionary<Guid, PlayerHolder>();
-    //convenience method to avoid iterating over players dict every time.
-    private Dictionary<Player, Guid> playerGuids = new Dictionary<Player, Guid>();
+    private DictionaryMap<Guid, IPlayer> playerToGuid = new DictionaryMap<Guid, IPlayer>();
+    private Dictionary<IPlayer, PlayerConstraints> playerConstraints = new Dictionary<IPlayer, PlayerConstraints>();
     private List<Color> playerColors = new List<Color>() { Color.cyan, Color.green, Color.red, Color.yellow };
     public GameObject playerPrefab;
+    public GameObject aiPrefab;
     public GameObject projectilePrefab;
     public GameObject menuPlayerPrefab;
 
     public int startGameDelayInSeconds = 3;
-    public float endGameDelay = 5f;
 
-    public int dummyPlayers = 0;
+    public int aiPlayers = 0;
 
     public float playerReadyDelay = 3f;
 
-    private void Update()
+    public void ForcePlayersReady()
     {
-        if (Input.GetKeyUp(KeyCode.Space) && players.Count > 0)
+        //force game start
+        if (playerConstraints.Count > 0)
         {
             //set players ready and advance.
-            foreach (KeyValuePair<Guid, PlayerHolder> ph in players)
+            foreach (Player p in playerConstraints.Keys)
             {
-                StartCoroutine(DummyStart(ph.Key));
+                SetPlayerReady(p);
             }
+            CheckAllPlayersReady();
         }
     }
 
@@ -44,28 +46,22 @@ public class PlayerManager : MonoBehaviour
         NetworkEventDispatcher.StartListening(NetworkEventType.Unregister_Player, UnregisterPlayer);
         NetworkEventDispatcher.StartListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
 
-        SceneManager.activeSceneChanged += activeSceneChanged;
 
-        if (dummyPlayers > 0)
+        if (aiPlayers > 0)
         {
-            for (int i = 0; i < dummyPlayers; i++)
+            for (int i = 0; i < aiPlayers; i++)
             {
-                Guid g = new Guid("00000000-0000-0000-0000-00000000000" + i);
-                StartCoroutine(RegisterDummy(g));
+                RegisterAIPlayer();
             }
         }
     }
 
-    private IEnumerator RegisterDummy(Guid g)
+    private void RegisterAIPlayer()
     {
-        yield return new WaitForEndOfFrame();
-        DataHolder d = new DataHolder(g, InputDataType.register, g);
-        RegisterPlayer(d);
-
-        PlayerHolder ph = players[g];
-        ph.AI = true;
-        players[g] = ph;
+        IPlayer player = InstantiatePlayer(true);
+        SetPlayerReady(player);
     }
+
     private IEnumerator DummyStart(Guid g)
     {
         yield return new WaitForSeconds(1f);
@@ -78,148 +74,133 @@ public class PlayerManager : MonoBehaviour
         NetworkEventDispatcher.StopListening(NetworkEventType.Register_Player, RegisterPlayer);
         NetworkEventDispatcher.StopListening(NetworkEventType.Unregister_Player, UnregisterPlayer);
         NetworkEventDispatcher.StopListening(NetworkEventType.Network_Input_Event, ReceivePlayerInput);
-
-        SceneManager.activeSceneChanged -= activeSceneChanged;
     }
 
-    private void activeSceneChanged(Scene oldScene, Scene newScene)
+    public void InitPlayersForScene(GameScene scene)
     {
-        if (newScene.name == "Game")
+        foreach (KeyValuePair<IPlayer, PlayerConstraints> kv in playerConstraints)
         {
-            foreach (Guid playerGuid in players.Keys)
+            kv.Key.ActivatePlayerObject(GameScene.Game == scene);
+            kv.Value.MenuPlayer.gameObject.SetActive(GameScene.Menu == scene);
+            if (!kv.Key.isAIControlled())
             {
-                players[playerGuid].MenuPlayer.gameObject.SetActive(false);
-                players[playerGuid].Player.gameObject.SetActive(true);
-                StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.game_start));
+                StartCoroutine(
+                    SendNewPlayerStatus(
+                        playerToGuid.Reverse[kv.Key],
+                        GameScene.Menu == scene ? PlayerStatus.ready : PlayerStatus.game_start,
+                        GameScene.Menu == scene ? playerReadyDelay : 0f)
+                    );
             }
-            StartCoroutine(StartCountdown());
-        }
-        else if (newScene.name == "Menu")
-        {
-            foreach (Guid playerGuid in players.Keys)
-            {
-                players[playerGuid].Player.gameObject.SetActive(false);
-                players[playerGuid].MenuPlayer.gameObject.SetActive(true);
-                Debug.Log("scene changed");
-                StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.ready, playerReadyDelay));
-            }
-            Debug.Log($"updating gui to player nr {players.Keys.Count}");
-            GameManager.instance.PlayerCountUpdate(players.Keys.Count);
         }
     }
 
-    private IEnumerator StartCountdown()
+    public void StartGame()
     {
-        Text countdownText = FindObjectOfType<Canvas>().transform.Find("Countdown").GetComponent<Text>();
-        int count = startGameDelayInSeconds;
-        do
+        foreach (IPlayer player in playerConstraints.Keys)
         {
-            countdownText.text = count.ToString();
-            count--;
-            yield return new WaitForSeconds(1f);
-        } while (count > 0);
-        //show Countdown;
-        foreach (Guid playerGuid in players.Keys)
-        {
-            Debug.Log("starting game");
-            players[playerGuid].Player.StartPlayerMovement();
+            player.StartMovement();
         }
-
-        countdownText.text = "GO!";
-        yield return new WaitForSeconds(.75f);
-        countdownText.gameObject.SetActive(false);
     }
 
     public void SendMessageToAllClients(string message)
     {
-        foreach (Guid playerGuid in players.Keys)
+        foreach (Guid player in playerToGuid.GetKeys())
         {
-            if (players[playerGuid].AI == true) return;
-            MobileWebController.instance.SendToClients(playerGuid, message);
+            MobileWebController.instance.SendToClients(player, message);
         }
     }
 
     public void SendMessageToClient(Player player, string message)
     {
-        MobileWebController.instance.SendToClients(playerGuids[player], message);
+        MobileWebController.instance.SendToClients(playerToGuid.Reverse[player], message);
     }
 
     private void SendMessageToClient(Guid guid, string message)
     {
-        if (players[guid].AI == true) return;
-
         MobileWebController.instance.SendToClients(guid, message);
     }
 
     public void RegisterPlayer(DataHolder playerInfo)
     {
         Guid playerGuid = (Guid)playerInfo.data;
-        GameObject player = Instantiate(playerPrefab, transform);
+        IPlayer player = InstantiatePlayer(false);
 
-        Color playerColor = playerColors[players.Keys.Count];
-        GameObject projectile = Instantiate(projectilePrefab, transform);
+        playerToGuid.Add(playerGuid, player);
 
-        player.GetComponent<Player>().Init(playerColor, projectile.GetComponent<Projectile>(), players.Keys.Count);
-        player.SetActive(false);
-
-        projectile.GetComponent<Projectile>().Init(player.GetComponent<Player>(), playerColor);
-        projectile.SetActive(false);
-
-        GameObject menuPlayer = Instantiate(menuPlayerPrefab, transform);
-        menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, players.Keys.Count);
-        menuPlayer.SetActive(false);
-
-        players.Add(
-            playerGuid,
-            new PlayerHolder(player.GetComponent<Player>(), menuPlayer.GetComponent<MenuPlayer>())
-        );
-        playerGuids.Add(player.GetComponent<Player>(), playerGuid);
-
-        if (SceneManager.GetActiveScene().name == "Menu")
+        if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
-            menuPlayer.SetActive(true);
-            GameManager.instance.PlayerCountUpdate(players.Keys.Count);
-
+            GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
             StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.ready, playerReadyDelay));
         }
     }
 
+    private IPlayer InstantiatePlayer(bool isAI)
+    {
+        GameObject holder = new GameObject("Player" + playerConstraints.Count + (isAI ? "_AI" : ""));
+        holder.transform.parent = transform;
+        GameObject playerObj = Instantiate(isAI ? aiPrefab : playerPrefab, holder.transform);
+        IPlayer player = isAI ? (IPlayer)playerObj.GetComponent<AIPlayer>() : (IPlayer)playerObj.GetComponent<Player>();
+
+        Color playerColor = isAI ? Color.grey : playerColors[playerConstraints.Keys.Count];
+        GameObject projectileObj = Instantiate(projectilePrefab, holder.transform);
+        Projectile projectile = projectileObj.GetComponent<Projectile>();
+
+        player.Initialize(playerColor, projectile, playerConstraints.Keys.Count);
+        playerObj.SetActive(false);
+
+        projectile.Initialize(player);
+        projectileObj.SetActive(false);
+
+        GameObject menuPlayer = Instantiate(menuPlayerPrefab, holder.transform);
+        menuPlayer.GetComponent<MenuPlayer>().Init(playerColor, playerConstraints.Keys.Count);
+        menuPlayer.SetActive(GameManager.instance.GetActiveGameScene() == GameScene.Menu);
+
+        playerConstraints.Add(
+            player,
+            new PlayerConstraints(menuPlayer.GetComponent<MenuPlayer>())
+        );
+
+        return player;
+    }
+
     public void UnregisterPlayer(DataHolder playerInfo)
     {
-        Debug.Log("unregister player");
-        PlayerHolder player = players[(Guid)playerInfo.identifier];
-        players.Remove((Guid)playerInfo.identifier);
-        playerGuids.Remove(player.Player);
-        Destroy(player.Player.gameObject);
-        Destroy(player.MenuPlayer.gameObject);
+        IPlayer player = playerToGuid.Forward[(Guid)playerInfo.identifier];
+        PlayerConstraints constraints = playerConstraints[player];
+        playerConstraints.Remove(player);
+        playerToGuid.Remove((Guid)playerInfo.identifier);
 
-        if (SceneManager.GetActiveScene().name == "Menu")
+        player.DestroyMe();
+        Destroy(constraints.MenuPlayer.gameObject);
+
+        if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
-            GameManager.instance.PlayerCountUpdate(players.Keys.Count);
+            GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
         }
-        else
+        else if (GameManager.instance.GetActiveGameScene() == GameScene.Game)
         {
             CheckRemainingPlayers();
         }
     }
 
+    //Gets called from NetworkEventDispatcher -> definitely a client / Player instance.
     public void ReceivePlayerInput(DataHolder data)
     {
-        if (players.ContainsKey((Guid)data.identifier))
-        {
-            PlayerHolder player = players[(Guid)data.identifier];
+        Player player = (Player)playerToGuid.Forward[(Guid)data.identifier];
 
-            if (SceneManager.GetActiveScene().name == "Menu"
+        if (player != null)
+        {
+            PlayerConstraints constraints = playerConstraints[player];
+
+            if (GameManager.instance.GetActiveGameScene() == GameScene.Menu
                 && ((InputDataType)data.type).Equals(InputDataType.ready))
             {
-                player.Ready = true;
-                player.MenuPlayer.SetReady();
-                players[(Guid)data.identifier] = player;
+                SetPlayerReady(player);
                 CheckAllPlayersReady();
             }
-            else if (SceneManager.GetActiveScene().name == "Game")
+            else if (GameManager.instance.GetActiveGameScene() == GameScene.Game)
             {
-                player.Player.ReceiveInput((InputDataType)data.type, data.data);
+                player.ReceiveInput((InputDataType)data.type, data.data);
             }
         }
         else
@@ -227,60 +208,58 @@ public class PlayerManager : MonoBehaviour
             Debug.Log($"could not handle message of unknown client. {data.identifier}");
         }
     }
+
     private void CheckAllPlayersReady()
     {
-        //TOOD: add counter (10 sek after first player registered. avoid advance when timer not finished).
-        foreach (PlayerHolder pH in players.Values)
+        //if all area ready and at least 1 human player.
+        if (playerConstraints.Values.All(pc => pc.ReadyAndAlive) && playerToGuid.GetKeys().Count > 0)
         {
-            if (pH.Ready == false) return;
+            Debug.Log("starting game");
+            GameManager.instance.StartGameCountdown();
         }
-
-        GameManager.instance.AdvanceToGame();
     }
 
-    public void RegistratePlayerDeath(Player player)
+    public void HandlePlayerDeath(IPlayer player)
     {
-        Guid id = playerGuids[player];
-        PlayerHolder ph = players[id];
-        ph.Ready = false; //because player died.
-        players[id] = ph; //necessary?
+        SetPlayerReady(player);
+
         CheckRemainingPlayers();
-        SendNewPlayerStatus(id, PlayerStatus.game_over);
+        if (!player.isAIControlled())
+        {
+            Guid guid = playerToGuid.Reverse[player];
+            SendNewPlayerStatus(guid, PlayerStatus.game_over);
+        }
     }
 
     private void CheckRemainingPlayers()
     {
-        List<Player> alive = new List<Player>();
-        foreach (PlayerHolder ph in players.Values)
-        {
-            if (ph.Ready == true)
-            {
-                alive.Add(ph.Player);
-            }
-        }
+        List<IPlayer> alive = playerToGuid.GetValues().FindAll(a => playerConstraints[a].ReadyAndAlive == true);
 
-        if (alive.Count <= 1)
+        if (alive.Count == 0)
         {
-            foreach (Player player in alive)
-            {
-                player.DisablePlayer();
-                SendNewPlayerStatus(playerGuids[player], PlayerStatus.game_winner);
-            }
-            StartCoroutine(EndGame());
+            //stop AIs.
+            GameManager.instance.TriggerGameEnd(null);
+        }
+        else if (alive.Count == 1)
+        {
+            Player player = (Player)playerToGuid.GetValues().FindLast(p => playerConstraints[p].ReadyAndAlive);
+            player.DisablePlayer();
+            SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_winner);
+
+            GameManager.instance.TriggerGameEnd(player.GetUIIdentifier());
         }
     }
 
-    private IEnumerator EndGame()
-    {
-        Debug.Log("Game over");
-        FindObjectOfType<Canvas>().transform.Find("End").gameObject.SetActive(true);
-        yield return new WaitForSeconds(endGameDelay);
-        SceneManager.LoadScene("Menu");
-    }
-
-    private IEnumerator SendNewPlayerStatus(Guid player, PlayerStatus status, float delay = 0f)
+    private IEnumerator SendNewPlayerStatus(Guid playerGuid, PlayerStatus status, float delay = 0f)
     {
         yield return new WaitForSeconds(delay);
-        SendMessageToClient(player, status.ToString());
+        SendMessageToClient(playerGuid, status.ToString());
+    }
+
+    private void SetPlayerReady(IPlayer player)
+    {
+        PlayerConstraints pc = playerConstraints[player];
+        pc.SetReadyAndAlive(true);
+        playerConstraints[player] = pc;
     }
 }

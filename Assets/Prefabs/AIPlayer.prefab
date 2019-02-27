@@ -178,10 +178,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 19379147971832838}
-  - component: {fileID: 933206962402858464}
+  - component: {fileID: 1917784264404475256}
   - component: {fileID: 4183771242647578963}
-  m_Layer: 9
-  m_Name: Player
+  m_Layer: 0
+  m_Name: AIPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -195,7 +195,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7870854967611338619}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 30}
+  m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_Children:
   - {fileID: 316388225341809333}
@@ -203,7 +203,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &933206962402858464
+--- !u!114 &1917784264404475256
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -212,17 +212,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 7870854967611338619}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b10ff786fa32c214889f45fb4e5dced5, type: 3}
+  m_Script: {fileID: 11500000, guid: 0190e8ce4c85d2a45a8eb12ee7fb6693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speedForce: 10
-  rotationSpeed: 20
+  rotationSpeed: 5
   boostForce: 15
   reactivateBoostTime: 2
   activateStealthDelay: 10
   stealthActiveTime: 2
   playerDeathResetDelay: 0.15
-  projectileResetDelay: 1
+  maxActionRandom: 24
+  shootModulo: 4
+  boostModulo: 6
+  stealthModulo: 8
+  steeringModulo: 12
+  calculateActionTimeStepMin: 0.25
+  calculateActionTimeStepMax: 5
 --- !u!54 &4183771242647578963
 Rigidbody:
   m_ObjectHideFlags: 0

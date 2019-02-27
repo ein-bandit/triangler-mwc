@@ -31,7 +31,7 @@ public class MenuPlayer : MonoBehaviour
         }
     }
 
-    public void SetReady()
+    public void SetReady(bool ready)
     {
         readyText.enabled = true;
     }

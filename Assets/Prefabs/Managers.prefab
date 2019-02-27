@@ -58,7 +58,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 7870854967611338619, guid: 8af9faf75e0cfe0459ed27b0c2a440ea,
     type: 3}
+  aiPrefab: {fileID: 7870854967611338619, guid: 9467d36c0d0af214fa02f7149256012e,
+    type: 3}
   projectilePrefab: {fileID: 6006401623461973077, guid: 5a2337688d202b44ab33078830671608,
     type: 3}
   menuPlayerPrefab: {fileID: 29079591691763273, guid: 61d706b23c5e6674c8f0a7425f407c99,
     type: 3}
+  startGameDelayInSeconds: 3
+  aiPlayers: 0
+  playerReadyDelay: 3

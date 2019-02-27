@@ -6,11 +6,9 @@ using UnityEngine.UI;
 
 public class Projectile : MonoBehaviour
 {
-    public float projectileResetDelay = 1f;
-
     public float projectileSpeed = 5f;
 
-    private Player player;
+    private IPlayer player;
     private Rigidbody _rigidbody;
 
     private void Awake()
@@ -18,11 +16,13 @@ public class Projectile : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
     }
 
-    public void Fire()
+    public void Fire(Vector3 position, Quaternion rotation)
     {
-        transform.rotation = player.transform.rotation;
-        transform.position = player.transform.position;
+        transform.position = position;
+        transform.rotation = rotation;
+
         gameObject.SetActive(true);
+
         _rigidbody.isKinematic = false;
         _rigidbody.velocity = Vector3.zero;
 
@@ -31,18 +31,21 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.GetComponentInParent<Player>() == player)
+        if ((IPlayer)other.GetComponent<Player>() == player)
         {
             return;
         }
-        if (other.tag == "Wall" || other.tag == "Player")
+        if (other.tag == "Wall")
         {
             ResetProjectile();
-
-            if (other.tag == "Player" && other.GetComponentInParent<Player>() != player)
-            {
-                other.GetComponentInParent<Player>().HitByProjectile();
-            }
+        }
+        else if (other.tag == "Player" || other.tag == "AIPlayer")
+        {
+            ResetProjectile();
+            (other.tag == "Player"
+                ? (IPlayer)other.GetComponent<Player>()
+                : (IPlayer)other.GetComponent<AIPlayer>()
+            ).HitByProjectile();
         }
     }
 
@@ -51,13 +54,10 @@ public class Projectile : MonoBehaviour
         gameObject.SetActive(false);
         _rigidbody.velocity = Vector3.zero;
         _rigidbody.isKinematic = true;
-
-        player.Invoke("ResetProjectileReady", projectileResetDelay);
     }
 
-    public void Init(Player player, Color playerColor)
+    public void Initialize(IPlayer player)
     {
         this.player = player;
-        //_render.material.color = playerColor;
     }
 }
