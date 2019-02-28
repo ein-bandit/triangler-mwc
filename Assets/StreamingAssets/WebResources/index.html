@@ -17,12 +17,16 @@
     <div class="wrapper">
       <div id="connect" class="content connect">
         <div class="connect-area">
-          <div class="connect-btn" onclick="connectClient()">connect</div>
+          <div class="connect-btn" onclick="mobileWebControl.connectClient()">
+            connect
+          </div>
         </div>
       </div>
       <div id="ready" class="content ready hidden">
         <div class="ready-area">
-          <div class="ready-btn" onclick="handleReadyClick()">ready</div>
+          <div class="ready-btn" onclick="guiHelper.handleReadyClick()">
+            ready
+          </div>
         </div>
       </div>
       <div id="content" class="content data hidden">
@@ -39,7 +43,7 @@
         <div
           id="tap-area-boost"
           class="tapable-area tap-area-boost"
-          onclick="activateBoostLocal()"
+          onclick="guiHelper.activateBoostLocal()"
         >
           <span>BOOST</span>
         </div>
@@ -54,6 +58,7 @@
     <script src="config.js"></script>
     <script src="console-to-div.js"></script>
     <script src="feature-detection.js"></script>
+    <script src="gamelogic.js"></script>
 
     <script src="adapter.js"></script>
     <script src="webrtc.js"></script>

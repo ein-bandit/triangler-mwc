@@ -1,5 +1,7 @@
 var featureDisplayArea = document.getElementById("feature-area");
 
+//consider using gyronorm.js
+
 var supportedFeatures = [];
 var enabledFeatures = [];
 
@@ -7,87 +9,109 @@ var features = {
   tapDetection: {
     available: true,
     message: "on screen actions enabled",
-    listener: function(sendFunc) {
-      for (var areaIndex in config.tapDetection.areas) {
-        var id = config.tapDetection.areas[areaIndex];
+    registration: function(isRegister) {
+      for (var areaIndex in config.features.tapDetection.areas) {
+        var id = config.features.tapDetection.areas[areaIndex];
         if ((tapArea = document.getElementById(id)) !== null) {
-          tapArea.addEventListener("click", function(evt) {
-            evt.target.classList.add("tapped");
-            setTimeout(() => {
-              evt.target.classList.remove("tapped");
-            }, 250);
-            sendFunc({ type: "tap", data: evt.target.id });
-          });
+          tapArea[
+            isRegister === true ? "addEventListener" : "removeEventListener"
+          ]("click", features.tapDetection.listenerFunction);
         }
       }
+    },
+    listenerFunction: function(evt) {
+      evt.target.classList.add("tapped");
+      setTimeout(() => {
+        evt.target.classList.remove("tapped");
+      }, 250);
+      mobileWebControl.sendFunction({ type: "tap", data: evt.target.id });
     }
   },
   vibrate: {
     available: navigator.vibrate,
     message: "vibration support",
-    listener: function() {
-      //no setup needed: just call navigator.vibrate(duration);
-    }
+    registration: function() {}, //no setup needed: just call navigator.vibrate(duration);
+    listenerFunction: function() {}
   },
   deviceOrientation: {
     available: window.DeviceOrientationEvent,
     message: "device orientation available",
-    listener: function(sendFunc) {
-      window.addEventListener("deviceorientation", function(evt) {
-        sendFunc({
+    registration: function(isRegister) {
+      window[isRegister === true ? "addEventListener" : "removeEventListener"](
+        "deviceorientation",
+        features.deviceOrientation.listenerFunction
+      );
+    },
+    listenerFunction: function(evt) {
+      var data = {
+        a: Math.floor(evt.alpha),
+        b: Math.floor(evt.beta),
+        c: Math.floor(evt.gamma)
+      };
+      if (data != features.deviceOrientation.lastData) {
+        mobileWebControl.sendFunction({
           type: "orientation",
-          data: {
-            a: Math.floor(evt.alpha),
-            b: Math.floor(evt.beta),
-            c: Math.floor(evt.gamma)
-          }
+          data: data
         });
-      });
-    }
+      }
+    },
+    lastData: null
   },
   deviceProximity: {
     available: "ondeviceproximity" in window,
     message: "device proximity available",
-    listener: function(sendFunc) {
-      window.addEventListener("deviceproximity", function(evt) {
-        sendFunc({ type: "proximity", data: evt.value > 0 });
-      });
+    registration: function(isRegister) {
+      window[isRegister === true ? "addEventListener" : "removeEventListener"](
+        "deviceproximity",
+        features.deviceProximity.listenerFunction
+      );
+    },
+    listenerFunction: function(evt) {
+      mobileWebControl.sendFunction({ type: "proximity", data: evt.value > 0 });
     }
   },
   deviceMotion: {
     available: window.DeviceMotionEvent,
     message: "device motion available",
-    listener: function(sendFunc) {
-      window.addEventListener("devicemotion", function(evt) {
-        //TODO: add check if phone was shaked and send data once.
+    registration: function(isRegister) {
+      window[isRegister === true ? "addEventListener" : "removeEventListener"](
+        "devicemotion",
+        features.deviceMotion.listenerFunction
+      );
+    },
+    listenerFunction: function(evt) {
+      //TODO: add check if phone was shaked and send data once.
 
-        //if (evt.acceleration.x > 0.5 || evt.acceleration.y > 0.5 || evt.acceleration.z > 0.5) {
-        if (evt.rotationRate.alpha > 30) {
-          dataElement.innerHTML =
-            "motion:" +
-            JSON.stringify(evt) +
-            ", " +
-            JSON.stringify({ x: evt.rotationRate.alpha });
-        }
-        //}
-        //sendFunc({type:'motion', data: evt.value > 0}));
-      });
+      //if (evt.acceleration.x > 0.5 || evt.acceleration.y > 0.5 || evt.acceleration.z > 0.5) {
+      if (evt.rotationRate.alpha > 30) {
+        dataElement.innerHTML =
+          "motion:" +
+          JSON.stringify(evt) +
+          ", " +
+          JSON.stringify({ x: evt.rotationRate.alpha });
+      }
+      //}
+      //mobileWebControl.sendFunction({type:'motion', data: evt.value > 0}));
     }
   },
   deviceLight: {
     available: "ondevicelight" in window,
     message: "ambient light available",
-    listener: function(sendFunc) {
-      window.addEventListener("devicelight", function(evt) {
-        sendFunc({ type: "lightsensor", data: evt.value });
-      });
+    registration: function(isRegister) {
+      window[isRegister === true ? "addEventListener" : "removeEventListener"](
+        "devicelight",
+        features.deviceLight.listenerFunction
+      );
+    },
+    listenerFunction: function(evt) {
+      mobileWebControl.sendFunction({ type: "lightsensor", data: evt.value });
     }
   }
 };
 
 for (var property in features) {
   if (features.hasOwnProperty(property) && features[property].available) {
-    if (config[property].enabled) {
+    if (config.features[property].enabled) {
       addAvailableFeatureMessage(features[property].message);
       //feature is supported by browser and enabled in config.
       enabledFeatures.push(property);

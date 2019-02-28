@@ -138,7 +138,6 @@ public class PlayerManager : MonoBehaviour
         if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
             GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
-            StartCoroutine(SendNewPlayerStatus(playerGuid, PlayerStatus.ready, playerReadyDelay));
         }
     }
 
@@ -227,25 +226,30 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void CommunicatePlayerDeathToClient(IPlayer player)
+    {
+        if (!player.isAIControlled())
+        {
+            SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_over);
+        }
+    }
+
     public void HandlePlayerDeath(IPlayer player)
     {
         SetPlayerReady(player, false);
 
         CheckRemainingPlayers();
-        if (!player.isAIControlled())
-        {
-            Guid guid = playerToGuid.Reverse[player];
-            SendNewPlayerStatus(guid, PlayerStatus.game_over);
-        }
     }
 
     private void CheckRemainingPlayers()
     {
-        List<IPlayer> alive = playerToGuid.GetValues().FindAll(a => playerConstraints[a].ReadyAndAlive == true);
+        List<IPlayer> alive = playerToGuid.GetValues().
+            FindAll(a => playerConstraints[a].ReadyAndAlive == true);
 
         if (alive.Count == 0)
         {
-            //stop AIs.
+            playerConstraints.Keys.ToList().
+                FindAll(p => p.isAIControlled()).ForEach(p => ((AIPlayer)p).DisablePlayer());
             GameManager.instance.TriggerGameEnd(null);
         }
         else if (alive.Count == 1)
@@ -265,7 +269,7 @@ public class PlayerManager : MonoBehaviour
         MobileWebController.instance.SendMessageToClient(
             playerGuid,
             OutputDataType.change_state,
-            status.ToString()
+            Enum.GetName(typeof(PlayerStatus), status)
         );
     }
 

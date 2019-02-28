@@ -135,16 +135,17 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
 
     private JsonData CreateJsonOutput(Enum outputDataType, object outputData)
     {
+        Debug.Log($"sending {JsonMapper.ToJson(new OutputDataHolder(outputDataType, outputData))}");
         return JsonMapper.ToJson(new OutputDataHolder(outputDataType, outputData));
     }
 
     public class OutputDataHolder
     {
-        public Enum type;
+        public string type;
         public object data;
         public OutputDataHolder(Enum type, object data)
         {
-            this.type = type;
+            this.type = Enum.GetName(typeof(OutputDataType), type);
             this.data = data;
         }
     }

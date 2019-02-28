@@ -97,6 +97,9 @@ public class AIPlayer : PlayerMovement, IPlayer
                     Debug.Log("AI Stealth");
                     EnableStealth();
                 }
+                float randomWaitTime = Random.Range(calculateActionTimeStepMin, calculateActionTimeStepMax);
+                Debug.Log($"AI waiting {randomWaitTime}");
+                yield return new WaitForSeconds(randomWaitTime);
             }
             else
             {

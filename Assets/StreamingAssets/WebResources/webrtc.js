@@ -237,7 +237,8 @@ function setDataChannel(dc, callbacks) {
   };
   dc.onmessage = function(event) {
     console.log("DataChannel Message:", event.data);
-    callbacks.message(event.data);
+
+    callbacks.message(prepareMessage(event.data));
   };
   dc.onopen = function() {
     console.log("datachannel connection successful.");
@@ -247,4 +248,8 @@ function setDataChannel(dc, callbacks) {
     console.log(dc.id, "closed");
     callbacks.close();
   };
+
+  function prepareMessage(message) {
+    return JSON.parse(JSON.parse(message));
+  }
 }

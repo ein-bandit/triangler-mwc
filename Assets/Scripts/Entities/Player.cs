@@ -173,6 +173,7 @@ public class Player : PlayerMovement, IPlayer
     public void HitByProjectile()
     {
         DeactivateMovement();
+        playerManager.CommunicatePlayerDeathToClient(this);
         StartCoroutine(DeathRotation());
     }
 
