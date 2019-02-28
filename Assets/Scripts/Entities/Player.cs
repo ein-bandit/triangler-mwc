@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using MobileWebControl.NetworkData.InputData;
 using UnityEngine;
 
@@ -202,6 +203,12 @@ public class Player : PlayerMovement, IPlayer
 
     public string GetUIIdentifier()
     {
+        var props = playerColor.GetType().GetProperties(BindingFlags.Public | BindingFlags.Static);
+
+        foreach (var prop in props)
+        {
+            if ((Color)prop.GetValue(null) == playerColor) { return prop.Name; }
+        }
         return playerColor.ToString();
     }
 }
