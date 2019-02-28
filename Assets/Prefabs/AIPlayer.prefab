@@ -134,8 +134,7 @@ MonoBehaviour:
   playerDeathResetDelay: 0.15
   maxActionRandom: 24
   shootProbability: 0.25
-  boostProbability: 0.5
-  stealthProbability: 0.1
+  stealthOrBoost: 0.5
   steeringProbability: 0.75
   calculateActionTimeStepMin: 0.25
   calculateActionTimeStepMax: 5
@@ -210,7 +209,7 @@ Rigidbody:
   m_Drag: 1
   m_AngularDrag: 7
   m_UseGravity: 0
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0

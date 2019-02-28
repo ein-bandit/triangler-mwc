@@ -37,9 +37,7 @@ public class AIPlayer : PlayerMovement, IPlayer
     [Range(0f, 1f)]
     public float shootProbability = .8f;
     [Range(0f, 1f)]
-    public float boostProbability = .5f;
-    [Range(0f, 1f)]
-    public float stealthProbability = .1f;
+    public float stealthOrBoost = .5f;
     [Range(0f, 1f)]
     public float steeringProbability = .75f;
 
@@ -71,31 +69,39 @@ public class AIPlayer : PlayerMovement, IPlayer
             {
                 Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
 
-                int random = Random.Range(0, 3);
+                int random = Random.Range(0, maxActionRandom);
 
-                if (random == 0)
+                if (random <= maxActionRandom * shootProbability && projectileReady)
                 {
                     Debug.Log("AI Fire");
                     projectile.Fire(transform.position, transform.rotation);
-                }
-                else if (random == 1)
-                {
-                    Debug.Log("AI Boost");
-                    boostActivated = true;
-                }
-                else if (random == 2)
-                {
-                    Debug.Log("AI Stealth");
-                    EnableStealth();
                 }
 
                 float randomWaitTime = Random.Range(calculateActionTimeStepMin, calculateActionTimeStepMax);
                 Debug.Log($"AI waiting {randomWaitTime}");
                 yield return new WaitForSeconds(randomWaitTime);
             }
+            else if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward * -1), out hit, Mathf.Infinity, playerMask))
+            {
+                Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward * -1) * hit.distance, Color.yellow);
+
+                int random = Random.Range(0, maxActionRandom);
+
+                if (random <= maxActionRandom * stealthOrBoost)
+                {
+                    Debug.Log("AI Boost");
+                    boostActivated = true;
+                }
+                else
+                {
+                    Debug.Log("AI Stealth");
+                    EnableStealth();
+                }
+            }
             else
             {
                 Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.red);
+                Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward * -1) * 1000, Color.blue);
                 if (!blockSteering && Random.Range(0f, maxActionRandom * steeringProbability) <= maxActionRandom * steeringProbability)
                 {
                     currentRotation = Random.Range(-1f, 1f);
