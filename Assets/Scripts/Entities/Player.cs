@@ -79,6 +79,7 @@ public class Player : PlayerMovement, IPlayer
                         {
                             boostActive = true;
                             canBoost = false;
+                            playerManager.SendMessageToClient(this, PlayerClientAction.boost_activated);
                             Invoke("ReactivateBoost", reactivateBoostTime);
                         }
                         break;
@@ -93,6 +94,7 @@ public class Player : PlayerMovement, IPlayer
                         {
                             projectile.Fire(transform.position, transform.rotation);
                             projectileReady = false;
+                            playerManager.SendMessageToClient(this, PlayerClientAction.fire_activated);
                         }
                         break;
                     case "reset-orientation":
@@ -122,6 +124,7 @@ public class Player : PlayerMovement, IPlayer
         _renderer.enabled = false;
         _noseRenderer.enabled = false;
         canActivateStealth = false;
+        playerManager.SendMessageToClient(this, PlayerClientAction.stealth_activated);
         Invoke("ResetInvisible", stealthActiveTime);
     }
 
@@ -143,16 +146,21 @@ public class Player : PlayerMovement, IPlayer
     private void ResetCanActivateStealth()
     {
         canActivateStealth = true;
+        playerManager.SendMessageToClient(this, PlayerClientAction.stealth_available);
+
     }
 
     private void ReactivateBoost()
     {
         canBoost = true;
+        playerManager.SendMessageToClient(this, PlayerClientAction.boost_available);
     }
 
     public void ProjectileDetonated()
     {
         projectileReady = true;
+        playerManager.SendMessageToClient(this, PlayerClientAction.fire_available);
+
     }
 
     private void EnableFeatures()
@@ -166,7 +174,6 @@ public class Player : PlayerMovement, IPlayer
     {
         DeactivateMovement();
         StartCoroutine(DeathRotation());
-        playerManager.SendMessageToClient(this, "hit");
     }
 
     public void ActivatePlayerObject(bool active)

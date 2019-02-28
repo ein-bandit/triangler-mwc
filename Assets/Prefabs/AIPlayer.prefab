@@ -133,7 +133,7 @@ MonoBehaviour:
   stealthActiveTime: 2
   playerDeathResetDelay: 0.15
   maxActionRandom: 24
-  shootProbability: 0.25
+  shootProbability: 1
   stealthOrBoost: 0.5
   steeringProbability: 0.75
   calculateActionTimeStepMin: 0.25

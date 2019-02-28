@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using LitJson;
 using MobileWebControl.NetworkData;
 using MobileWebControl.NetworkData.InputData;
@@ -25,14 +26,13 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
     private const String dataTypeKey = "type";
     private const String dataObjectKey = "data";
 
-    public DataHolder InterpretByteData(IComparable identifier, byte[] bytes)
+    public DataHolder InterpretInputDataFromBytes(IComparable identifier, byte[] bytes)
     {
-        //convert bytes to string.
-        InputData p = ParseAndDistributeData(bytes);
+        InputData p = ParseMessage(Encoding.UTF8.GetString(bytes));
         return new DataHolder(identifier, p.type, p.data);
     }
 
-    public DataHolder InterpretStringData(IComparable identifier, string message)
+    public DataHolder InterpretInputDataFromText(IComparable identifier, string message)
     {
         InputData p = ParseMessage(message);
         return new DataHolder(identifier, p.type, p.data);
@@ -123,9 +123,30 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
         }
     }
 
-    private InputData ParseAndDistributeData(byte[] bytes)
+    public string ConvertOutputDataToText(Enum outputDataType, object outputData)
     {
-        return new InputData(InputDataType.invalid, null);
+        return CreateJsonOutput(outputDataType, outputData).ToJson();
+    }
+
+    public byte[] ConvertOutputDataToBytes(Enum outputDataType, object outputData)
+    {
+        return Encoding.UTF8.GetBytes(CreateJsonOutput(outputDataType, outputData).ToJson());
+    }
+
+    private JsonData CreateJsonOutput(Enum outputDataType, object outputData)
+    {
+        return JsonMapper.ToJson(new OutputDataHolder(outputDataType, outputData));
+    }
+
+    public class OutputDataHolder
+    {
+        public Enum type;
+        public object data;
+        public OutputDataHolder(Enum type, object data)
+        {
+            this.type = type;
+            this.data = data;
+        }
     }
 
     #endregion

@@ -240,7 +240,8 @@ function setDataChannel(dc, callbacks) {
     callbacks.message(event.data);
   };
   dc.onopen = function() {
-    dataChannel.send(dc.id, "initiated");
+    console.log("datachannel connection successful.");
+    callbacks.initialize();
   };
   dc.onclose = function() {
     console.log(dc.id, "closed");

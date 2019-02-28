@@ -62,6 +62,9 @@ function setupDataChannelAndListeners() {
   connectBtn.innerHTML = "connected";
 
   createLocalDataChannel("message-data-channel", {
+    initialize: function() {
+      updateScene("ready");
+    },
     message: function(message) {
       if (message === "ready") {
         updateScene("ready");

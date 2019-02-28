@@ -102,22 +102,30 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void SendMessageToAllClients(string message)
+    public void SendMessageToAllClients(object data)
     {
         foreach (Guid player in playerToGuid.GetKeys())
         {
-            MobileWebController.instance.SendToClients(player, message);
+            MobileWebController.instance.SendMessageToClient(player, OutputDataType.command, data);
         }
     }
 
-    public void SendMessageToClient(Player player, string message)
+    public void SendMessageToClient(Player player, object data)
     {
-        MobileWebController.instance.SendToClients(playerToGuid.Reverse[player], message);
+        MobileWebController.instance.SendMessageToClient(
+            playerToGuid.Reverse[player],
+            OutputDataType.command,
+            data
+        );
     }
 
-    private void SendMessageToClient(Guid guid, string message)
+    private void SendMessageToClient(Guid guid, object data)
     {
-        MobileWebController.instance.SendToClients(guid, message);
+        MobileWebController.instance.SendMessageToClient(
+            guid,
+            OutputDataType.command,
+            data
+        );
     }
 
     public void RegisterPlayer(DataHolder playerInfo)
@@ -252,8 +260,13 @@ public class PlayerManager : MonoBehaviour
 
     private IEnumerator SendNewPlayerStatus(Guid playerGuid, PlayerStatus status, float delay = 0f)
     {
+        //wait for end of frame does crash unity (thread concurrency problem when just received message?)
         yield return new WaitForSeconds(delay);
-        SendMessageToClient(playerGuid, status.ToString());
+        MobileWebController.instance.SendMessageToClient(
+            playerGuid,
+            OutputDataType.change_state,
+            status.ToString()
+        );
     }
 
     private void SetPlayerReady(IPlayer player, bool readyAndAlive = true)

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using MobileWebControl.WebRTC;
 using MobileWebControl.Webserver;
 using System.IO;
+using MobileWebControl.NetworkData.InputData;
 
 namespace MobileWebControl
 {
@@ -31,6 +32,8 @@ namespace MobileWebControl
         public static int webserverPort = 8880;
 
         private bool isAlive = true;
+
+        public OutputDataSendMode outputDataSendMode;
 
         public static string webServerAddress
         {
@@ -87,7 +90,7 @@ namespace MobileWebControl
             {
                 PassReceivedMessage(
                     NetworkEventType.Network_Input_Event,
-                    interpreter.InterpretStringData(identifier, message)
+                    interpreter.InterpretInputDataFromText(identifier, message)
                 );
             }
         }
@@ -129,9 +132,26 @@ namespace MobileWebControl
             NetworkEventDispatcher.TriggerEvent(eventType, data);
         }
 
-        public void SendToClients(IComparable identifier, string message)
+        public void SendMessageToClient(IComparable identifier, OutputDataType type, object data)
         {
-            webRTCServer.SendWebRTCMessage(identifier, message);
+            if (outputDataSendMode == OutputDataSendMode.text)
+            {
+                webRTCServer.SendWebRTCMessage(identifier, convertOutputToJSONString(type, data));
+            }
+            else if (outputDataSendMode == OutputDataSendMode.bytes)
+            {
+                webRTCServer.SendWebRTCMessage(identifier, convertOutputToBytes(type, data));
+            }
+        }
+
+        private string convertOutputToJSONString(OutputDataType type, object data)
+        {
+            return interpreter.ConvertOutputDataToText(type, data);
+        }
+
+        private byte[] convertOutputToBytes(OutputDataType type, object data)
+        {
+            return interpreter.ConvertOutputDataToBytes(type, data);
         }
 
         private void OnApplicationQuit()
