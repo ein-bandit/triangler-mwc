@@ -110,21 +110,12 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void SendMessageToClient(Player player, object data)
+    public void SendMessageToClient(Player player, PlayerClientAction data)
     {
         MobileWebController.instance.SendMessageToClient(
             playerToGuid.Reverse[player],
             OutputDataType.command,
-            data
-        );
-    }
-
-    private void SendMessageToClient(Guid guid, object data)
-    {
-        MobileWebController.instance.SendMessageToClient(
-            guid,
-            OutputDataType.command,
-            data
+            Enum.GetName(typeof(PlayerClientAction), data)
         );
     }
 

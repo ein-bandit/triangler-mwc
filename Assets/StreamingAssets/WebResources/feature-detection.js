@@ -10,12 +10,14 @@ var features = {
     available: true,
     message: "on screen actions enabled",
     registration: function(isRegister) {
-      for (var areaIndex in config.features.tapDetection.areas) {
-        var id = config.features.tapDetection.areas[areaIndex];
-        if ((tapArea = document.getElementById(id)) !== null) {
-          tapArea[
-            isRegister === true ? "addEventListener" : "removeEventListener"
-          ]("click", features.tapDetection.listenerFunction);
+      for (var prop in config.features.tapDetection.areas) {
+        if (config.features.tapDetection.areas.hasOwnProperty(prop)) {
+          var id = config.features.tapDetection.areas[prop];
+          if ((tapArea = document.getElementById(id)) !== null) {
+            tapArea[
+              isRegister === true ? "addEventListener" : "removeEventListener"
+            ]("click", features.tapDetection.listenerFunction);
+          }
         }
       }
     },
@@ -24,7 +26,10 @@ var features = {
       setTimeout(() => {
         evt.target.classList.remove("tapped");
       }, 250);
-      mobileWebControl.sendFunction({ type: "tap", data: evt.target.id });
+
+      if (!evt.target.classList.contains("disabled")) {
+        mobileWebControl.sendFunction({ type: "tap", data: evt.target.id });
+      }
     }
   },
   vibrate: {
