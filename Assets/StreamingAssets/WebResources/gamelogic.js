@@ -7,6 +7,7 @@ gamelogic.changeState = function(state) {
       deactivateNoSleep();
       connectElement.classList.add("hidden");
       contentElement.classList.add("hidden");
+      connectBtn.classList.remove("disabled");
       readyElement.classList.remove("hidden");
 
       toggleTapArea(readyBtn, false);
@@ -106,10 +107,11 @@ const readyBtn = readyElement.getElementsByClassName("ready-btn")[0];
 const guiHelper = {
   handleReadyClick: function() {
     readyBtn.classList.add("disabled");
-
-    readyBtn.innerHTML = "waiting";
-
     activateNoSleep();
+
+    setTimeout(() => {
+      readyBtn.innerHTML = "starting...";
+    }, 300);
 
     //wait a bit to make sure connection is established correctly, maybe not needed.
     setTimeout(() => {

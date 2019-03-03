@@ -16,6 +16,11 @@ var mobileWebControl = {
   connectClient: function() {
     if (!connecting) {
       connecting = true;
+      connectBtn.classList.add("disabled");
+      setTimeout(() => {
+        connectBtn.innerHTML = "connecting...";
+      }, 300);
+
       connectTapAnimation();
       connect(
         serverAddress,
@@ -26,8 +31,6 @@ var mobileWebControl = {
 };
 
 function setupDataChannelAndListeners() {
-  connectBtn.innerHTML = "connecting...";
-
   createLocalDataChannel("message-data-channel", {
     initialize: function() {
       gamelogic.changeState("ready");
