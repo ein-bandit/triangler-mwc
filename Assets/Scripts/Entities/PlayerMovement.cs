@@ -80,7 +80,6 @@ public class PlayerMovement : MonoBehaviour
         int step = 6;
         for (int i = 0; i <= 360 / step; i++)
         {
-            Debug.Log("death rotation turn.");
             yield return new WaitForEndOfFrame();
             transform.rotation = Quaternion.Euler(
                 new Vector3(

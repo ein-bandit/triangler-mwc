@@ -232,14 +232,19 @@ public class PlayerManager : MonoBehaviour
     {
         if (!player.isAIControlled())
         {
-            SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_over);
+            StartCoroutine(SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_over));
         }
     }
 
     public void HandlePlayerDeath(IPlayer player)
     {
+        if (player.isAIControlled() && playerToGuid.GetValues().
+            FindAll(a => playerConstraints[a].ReadyAndAlive == true).Count == 0)
+        {
+            //prev. died player already triggered end.
+            return;
+        }
         SetPlayerReady(player, false);
-
         CheckRemainingPlayers();
     }
 
@@ -258,7 +263,7 @@ public class PlayerManager : MonoBehaviour
         {
             Player player = (Player)playerToGuid.GetValues().FindLast(p => playerConstraints[p].ReadyAndAlive);
             player.DisablePlayer();
-            SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_winner);
+            StartCoroutine(SendNewPlayerStatus(playerToGuid.Reverse[player], PlayerStatus.game_winner));
 
             GameManager.instance.TriggerGameEnd(player.GetUIIdentifier());
         }

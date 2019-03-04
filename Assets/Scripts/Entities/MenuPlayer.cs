@@ -23,16 +23,11 @@ public class MenuPlayer : MonoBehaviour
         _material.color = this.playerColor;
     }
 
-    private void OnEnable()
-    {
-        if (SceneManager.GetActiveScene().name == "Menu")
-        {
-            readyText = FindObjectOfType<Canvas>().transform.Find("PlayersReady").Find(this.playerIndex.ToString()).GetComponent<Text>();
-        }
-    }
 
     public void SetReady(bool ready)
     {
+        readyText = FindObjectOfType<Canvas>().transform.Find("PlayersReady").Find(this.playerIndex.ToString()).GetComponent<Text>();
+
         readyText.enabled = true;
     }
 

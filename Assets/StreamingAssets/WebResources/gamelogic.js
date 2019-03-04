@@ -1,5 +1,8 @@
 const gamelogic = {};
 
+var gameEnd = document.getElementById("game-end");
+var gameWinner = document.getElementById("game-winner");
+
 gamelogic.changeState = function(state) {
   console.log("received state change - " + state);
   switch (state) {
@@ -9,6 +12,8 @@ gamelogic.changeState = function(state) {
       contentElement.classList.add("hidden");
       connectBtn.classList.remove("disabled");
       readyElement.classList.remove("hidden");
+      gameEnd.classList.add("hidden");
+      gameWinner.classList.add("hidden");
 
       toggleTapArea(readyBtn, false);
 
@@ -21,27 +26,31 @@ gamelogic.changeState = function(state) {
     case "game_start":
       readyElement.classList.add("hidden");
       contentElement.classList.remove("hidden");
+
+      for (var prop in config.features.tapDetection.areas) {
+        if (config.features.tapDetection.areas.hasOwnProperty(prop)) {
+          document
+            .getElementById(config.features.tapDetection.areas[prop])
+            .classList.remove("disabled");
+        }
+      }
+
       gameStarted = true;
       break;
     case "game_over":
       gameStarted = false;
-      setTimeout(() => {
-        navigator.vibrate(75);
-      }, 100);
-      setTimeout(() => {
-        navigator.vibrate(75);
-      }, 200);
-      setTimeout(() => {
-        navigator.vibrate(75);
-      }, 300);
-
       contentElement.classList.add("hidden");
-
-      //show game over screen.
+      gameEnd.classList.remove("hidden");
+      navigator.vibrate(100);
+      setTimeout(() => {
+        navigator.vibrate(100);
+      }, 200);
       break;
     case "game_winner":
       gameStarted = false;
-      //show game over with winner.
+      contentElement.classList.add("hidden");
+      gameEnd.classList.remove("hidden");
+      gameWinner.classList.remove("hidden");
       break;
     case "connect":
       deactivateNoSleep();
@@ -50,6 +59,8 @@ gamelogic.changeState = function(state) {
       connectElement.classList.remove("hidden");
       contentElement.classList.add("hidden");
       readyElement.classList.add("hidden");
+      gameEnd.classList.add("hidden");
+      gameWinner.classList.add("hidden");
 
       connectBtn.innerHTML = "connect";
 
@@ -107,10 +118,12 @@ const readyBtn = readyElement.getElementsByClassName("ready-btn")[0];
 const guiHelper = {
   handleReadyClick: function() {
     readyBtn.classList.add("disabled");
+    readyBtn.classList.add("tapped");
     activateNoSleep();
 
     setTimeout(() => {
       readyBtn.innerHTML = "starting...";
+      readyBtn.classList.remove("tapped");
     }, 300);
 
     //wait a bit to make sure connection is established correctly, maybe not needed.

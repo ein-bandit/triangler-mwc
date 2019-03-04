@@ -100,7 +100,7 @@ public class Player : PlayerMovement, IPlayer
                             playerManager.SendMessageToClient(this, PlayerClientAction.fire_activated);
                         }
                         break;
-                    case "reset-orientation":
+                    case "tap-area-reset_orientation":
                         //reset position if something went wrong?
                         sinInitialRotation = ((Vector3)inputData).x;
                         break;
@@ -176,7 +176,6 @@ public class Player : PlayerMovement, IPlayer
 
     public void HitByProjectile()
     {
-        Debug.Log("player hit by projectile");
         StopMovement();
         playerManager.CommunicatePlayerDeathToClient(this);
         StartCoroutine(DeathRotation());
@@ -192,7 +191,6 @@ public class Player : PlayerMovement, IPlayer
     }
     public void DisablePlayer()
     {
-        Debug.Log("disable player");
         DeactivateMovement();
     }
 

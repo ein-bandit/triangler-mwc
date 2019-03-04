@@ -18,7 +18,8 @@ body {
   opacity: 0.75;
 }
 .connect-area,
-.ready-area {
+.ready-area,
+.game-end-area {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +31,8 @@ body {
   bottom: 50%;
 }
 .connect-area .connect-btn,
-.ready-area .ready-btn {
+.ready-area .ready-btn,
+.game-end-area {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid white;
   color: white;
@@ -38,6 +40,14 @@ body {
   border-radius: 5px;
   font-size: 2em;
   transition: background-color 0.25s;
+}
+.game-end-area {
+  top: 40%;
+  left: 25%;
+  right: 25%;
+  bottom: 50%;
+  font-size: 1.5em;
+  flex-flow: column;
 }
 .connect-area .connect-btn.tapped,
 .ready-area .ready-btn.tapped {
