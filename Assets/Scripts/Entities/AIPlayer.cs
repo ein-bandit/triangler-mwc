@@ -142,7 +142,9 @@ public class AIPlayer : PlayerMovement, IPlayer
     {
         this.playerColor = color;
         this.projectile = projectile;
-        InitializeMovement(index);
+        this.playerIndex = index;
+
+        InitializeMovement();
     }
 
     private void ResetInvisible()
@@ -185,6 +187,10 @@ public class AIPlayer : PlayerMovement, IPlayer
     public void ActivatePlayerObject(bool active)
     {
         gameObject.SetActive(active);
+        if (active)
+        {
+            ResetPlayerMovement();
+        }
     }
 
     public void DisablePlayer()

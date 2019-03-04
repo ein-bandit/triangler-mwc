@@ -78,6 +78,7 @@ public class PlayerManager : MonoBehaviour
 
     public void InitPlayersForScene(GameScene scene)
     {
+        Debug.Log("init player for scene");
         foreach (KeyValuePair<IPlayer, PlayerConstraints> kv in playerConstraints)
         {
             kv.Key.ActivatePlayerObject(GameScene.Game == scene);
@@ -92,6 +93,17 @@ public class PlayerManager : MonoBehaviour
                     );
             }
         }
+        //do this after iteration to avoid altering data in foreach.
+        if (GameScene.Menu == scene)
+        {
+            SetAIPlayersReady();
+        }
+    }
+
+    private void SetAIPlayersReady()
+    {
+        playerConstraints.Keys.ToList().
+                FindAll(p => p.isAIControlled()).ForEach(p => SetPlayerReady(p));
     }
 
     public void StartGame()
@@ -266,6 +278,7 @@ public class PlayerManager : MonoBehaviour
 
     private void SetPlayerReady(IPlayer player, bool readyAndAlive = true)
     {
+        Debug.Log("setting player ready");
         PlayerConstraints pc = playerConstraints[player];
         pc.SetReadyAndAlive(readyAndAlive);
         playerConstraints[player] = pc;

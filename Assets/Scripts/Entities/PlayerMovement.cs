@@ -13,6 +13,8 @@ public class PlayerMovement : MonoBehaviour
 
     protected bool boostActive;
 
+    protected int playerIndex;
+
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -77,13 +79,19 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    protected void InitializeMovement(int index)
+    protected void InitializeMovement()
     {
-        transform.rotation = Quaternion.Euler(0f, 90 * index, 0f);
+        transform.rotation = Quaternion.Euler(0f, 90 * this.playerIndex, 0f);
         transform.position = transform.position + new Vector3(
             transform.forward.x * transform.localScale.x * 2,
             transform.forward.y * transform.localScale.y * 2,
             transform.forward.z * transform.localScale.z * 2
         );
+    }
+
+    protected void ResetPlayerMovement()
+    {
+        transform.position = Vector3.zero;
+        InitializeMovement();
     }
 }

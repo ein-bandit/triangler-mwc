@@ -28,7 +28,6 @@ public class Player : PlayerMovement, IPlayer
     private float sinInitialRotation = float.MinValue;
     private float steeringRangeInPercent = .25f;
 
-    // Start is called before the first frame update
     void Start()
     {
         playerManager = GameManager.instance.GetComponent<PlayerManager>();
@@ -132,8 +131,9 @@ public class Player : PlayerMovement, IPlayer
     {
         this.playerColor = color;
         this.projectile = projectile;
+        this.playerIndex = index;
 
-        InitializeMovement(index);
+        InitializeMovement();
     }
 
     private void ResetInvisible()
@@ -180,6 +180,10 @@ public class Player : PlayerMovement, IPlayer
     public void ActivatePlayerObject(bool active)
     {
         gameObject.SetActive(active);
+        if (active)
+        {
+            ResetPlayerMovement();
+        }
     }
     public void DisablePlayer()
     {
