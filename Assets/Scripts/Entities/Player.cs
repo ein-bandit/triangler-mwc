@@ -16,6 +16,7 @@ public class Player : PlayerMovement, IPlayer
     private Renderer _renderer;
     private Renderer _noseRenderer;
     private Material _material;
+    private Collider _collider;
     private PlayerManager playerManager;
 
     private Projectile projectile;
@@ -36,6 +37,8 @@ public class Player : PlayerMovement, IPlayer
         _material = _renderer.material;
 
         _material.color = this.playerColor;
+
+        _collider = GetComponent<Collider>();
     }
 
     private void Update()
@@ -48,6 +51,7 @@ public class Player : PlayerMovement, IPlayer
 
     public void StartMovement()
     {
+        _collider.enabled = true;
         EnableFeatures();
         ActivateMovement();
     }
@@ -172,7 +176,8 @@ public class Player : PlayerMovement, IPlayer
 
     public void HitByProjectile()
     {
-        DeactivateMovement();
+        Debug.Log("player hit by projectile");
+        StopMovement();
         playerManager.CommunicatePlayerDeathToClient(this);
         StartCoroutine(DeathRotation());
     }
@@ -187,12 +192,14 @@ public class Player : PlayerMovement, IPlayer
     }
     public void DisablePlayer()
     {
+        Debug.Log("disable player");
         DeactivateMovement();
     }
 
     private IEnumerator DeathRotation()
     {
-        ExecuteDeathRotation();
+        _collider.enabled = false;
+        yield return ExecuteDeathRotation();
         yield return new WaitForSeconds(playerDeathResetDelay);
         gameObject.SetActive(false);
         playerManager.HandlePlayerDeath(this);

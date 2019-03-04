@@ -15,13 +15,16 @@ public class PlayerMovement : MonoBehaviour
 
     protected int playerIndex;
 
+    private bool moving;
+
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
     }
-    void FixedUpdate()
+
+    private void FixedUpdate()
     {
-        if (!_rigidbody.isKinematic)
+        if (!_rigidbody.isKinematic && moving)
         {
             _rigidbody.AddForce(transform.forward * speedForce);
 
@@ -56,11 +59,19 @@ public class PlayerMovement : MonoBehaviour
 
     protected void ActivateMovement()
     {
+        moving = true;
         _rigidbody.isKinematic = false;
     }
     protected void DeactivateMovement()
     {
+        moving = false;
+        _rigidbody.velocity = Vector3.zero;
         _rigidbody.isKinematic = true;
+    }
+
+    protected void StopMovement()
+    {
+        moving = false;
         _rigidbody.velocity = Vector3.zero;
     }
 
@@ -69,6 +80,7 @@ public class PlayerMovement : MonoBehaviour
         int step = 6;
         for (int i = 0; i <= 360 / step; i++)
         {
+            Debug.Log("death rotation turn.");
             yield return new WaitForEndOfFrame();
             transform.rotation = Quaternion.Euler(
                 new Vector3(

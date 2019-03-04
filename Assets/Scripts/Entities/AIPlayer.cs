@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class AIPlayer : PlayerMovement, IPlayer
 {
-    public float reactivateBoostTime = 2f;
     public float activateStealthDelay = 10f;
     public float stealthActiveTime = 2f;
     public float playerDeathResetDelay = .15f;
@@ -14,14 +13,13 @@ public class AIPlayer : PlayerMovement, IPlayer
     private Renderer _renderer;
     private Renderer _noseRenderer;
     private Material _material;
+    private Collider _collider;
     private PlayerManager playerManager;
 
     private Projectile projectile;
 
 
     private bool blockSteering = false;
-    private bool boostActivated = false;
-    private bool canBoost = false;
 
     private bool canActivateStealth = false;
 
@@ -30,8 +28,6 @@ public class AIPlayer : PlayerMovement, IPlayer
     private LayerMask playerMask;
 
     private Color playerColor;
-
-    private float steeringRangeInPercent = .25f;
 
     public int maxActionRandom = 100;
     [Range(0f, 1f)]
@@ -52,12 +48,11 @@ public class AIPlayer : PlayerMovement, IPlayer
         _renderer = GetComponent<Renderer>();
         _noseRenderer = transform.Find("nose").GetComponent<Renderer>();
         _material = _renderer.material;
-
         _material.color = this.playerColor;
+        _collider = GetComponent<Collider>();
 
         playerMask = LayerMask.GetMask(new string[] { "Player" });
     }
-
 
     private IEnumerator CalculateAIAction()
     {
@@ -76,6 +71,10 @@ public class AIPlayer : PlayerMovement, IPlayer
                     Debug.Log("AI Fire");
                     projectile.Fire(transform.position, transform.rotation);
                 }
+                else
+                {
+                    Debug.Log($"did not shoot {random} <= {maxActionRandom * shootProbability},{projectileReady}");
+                }
 
                 float randomWaitTime = Random.Range(calculateActionTimeStepMin, calculateActionTimeStepMax);
                 Debug.Log($"AI waiting {randomWaitTime}");
@@ -90,7 +89,7 @@ public class AIPlayer : PlayerMovement, IPlayer
                 if (random <= maxActionRandom * stealthOrBoost)
                 {
                     Debug.Log("AI Boost");
-                    boostActivated = true;
+                    boostActive = true;
                 }
                 else
                 {
@@ -116,7 +115,7 @@ public class AIPlayer : PlayerMovement, IPlayer
                     Invoke("ResetBlockSteering", waitTime);
                 }
             }
-            //does not happen
+
             yield return null;
         }
     }
@@ -159,11 +158,6 @@ public class AIPlayer : PlayerMovement, IPlayer
         canActivateStealth = true;
     }
 
-    private void ReactivateBoost()
-    {
-        canBoost = true;
-    }
-
     public void ProjectileDetonated()
     {
         projectileReady = true;
@@ -171,21 +165,21 @@ public class AIPlayer : PlayerMovement, IPlayer
 
     private void EnableFeatures()
     {
-        canBoost = true;
         projectileReady = true;
         canActivateStealth = true;
     }
 
-
     public void HitByProjectile()
     {
-        DeactivateMovement();
+        Debug.Log("ai hit by projectile");
         StopCoroutine(CalculateActionCoroutine);
+        StopMovement();
         StartCoroutine(DeathRotation());
     }
 
     public void ActivatePlayerObject(bool active)
     {
+        Debug.Log($"de/activating ai player {active}");
         gameObject.SetActive(active);
         if (active)
         {
@@ -195,13 +189,16 @@ public class AIPlayer : PlayerMovement, IPlayer
 
     public void DisablePlayer()
     {
+        Debug.Log("disabling ai player");
         DeactivateMovement();
     }
 
     private IEnumerator DeathRotation()
     {
-        ExecuteDeathRotation();
+        _collider.enabled = false;
+        yield return ExecuteDeathRotation();
         yield return new WaitForSeconds(playerDeathResetDelay);
+        DeactivateMovement();
         gameObject.SetActive(false);
         playerManager.HandlePlayerDeath(this);
     }
@@ -218,6 +215,7 @@ public class AIPlayer : PlayerMovement, IPlayer
 
     public void StartMovement()
     {
+        _collider.enabled = true;
         ActivateMovement();
         CalculateActionCoroutine = StartCoroutine(CalculateAIAction());
         EnableFeatures();

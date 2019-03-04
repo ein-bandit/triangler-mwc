@@ -78,7 +78,6 @@ public class PlayerManager : MonoBehaviour
 
     public void InitPlayersForScene(GameScene scene)
     {
-        Debug.Log("init player for scene");
         foreach (KeyValuePair<IPlayer, PlayerConstraints> kv in playerConstraints)
         {
             kv.Key.ActivatePlayerObject(GameScene.Game == scene);
@@ -278,7 +277,6 @@ public class PlayerManager : MonoBehaviour
 
     private void SetPlayerReady(IPlayer player, bool readyAndAlive = true)
     {
-        Debug.Log("setting player ready");
         PlayerConstraints pc = playerConstraints[player];
         pc.SetReadyAndAlive(readyAndAlive);
         playerConstraints[player] = pc;
