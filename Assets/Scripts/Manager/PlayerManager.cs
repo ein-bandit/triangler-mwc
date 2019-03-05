@@ -24,7 +24,7 @@ public class PlayerManager : MonoBehaviour
 
     public int aiPlayers = 0;
 
-    public float playerReadyDelay = 3f;
+    public float playerReadyDelay = 1.5f;
 
     public void ForcePlayersReady()
     {
@@ -130,6 +130,15 @@ public class PlayerManager : MonoBehaviour
         );
     }
 
+    private void SendCustomMessageToClient(Player player, string data)
+    {
+        MobileWebController.instance.SendMessageToClient(
+            playerToGuid.Reverse[player],
+            OutputDataType.command,
+            data
+        );
+    }
+
     public void RegisterPlayer(DataHolder playerInfo)
     {
         Guid playerGuid = (Guid)playerInfo.data;
@@ -137,10 +146,18 @@ public class PlayerManager : MonoBehaviour
 
         playerToGuid.Add(playerGuid, player);
 
+        StartCoroutine(SendPlayerColor((Player)player));
+
         if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
             GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
         }
+    }
+
+    private IEnumerator SendPlayerColor(Player player)
+    {
+        yield return new WaitForSeconds(playerReadyDelay);
+        SendCustomMessageToClient(player, "color:" + player.GetUIIdentifier(true));
     }
 
     private IPlayer InstantiatePlayer(bool isAI)

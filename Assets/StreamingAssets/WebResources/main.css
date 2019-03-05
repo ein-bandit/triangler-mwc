@@ -61,6 +61,40 @@ body {
   background-color: rgba(255, 255, 255, 0.25);
   pointer-events: none;
 }
+
+#player-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+}
+#player-area .triangle {
+  display: flex;
+  justify-content: center;
+
+  -webkit-box-shadow: 0px 0px 40px 20px rgba(0, 0, 0, 0.7);
+  -moz-box-shadow: 0px 0px 40px 20px rgba(0, 0, 0, 0.7);
+  box-shadow: 0px 0px 40px 20px rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
+
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 50px 75px 50px;
+  border-color: transparent transparent darkgrey transparent;
+}
+#player-area .triangle .triangle-nose {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 10px 15px 10px;
+  border-color: transparent transparent #4d4d4d transparent;
+}
 .tapable-area {
   position: absolute;
   top: 25px;

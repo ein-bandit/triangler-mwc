@@ -217,14 +217,21 @@ public class Player : PlayerMovement, IPlayer
         return false;
     }
 
-    public string GetUIIdentifier()
+    public string GetUIIdentifier(bool inRGBA = false)
     {
-        var props = playerColor.GetType().GetProperties(BindingFlags.Public | BindingFlags.Static);
-
-        foreach (var prop in props)
+        if (inRGBA)
         {
-            if ((Color)prop.GetValue(null) == playerColor) { return prop.Name; }
+            return ColorUtility.ToHtmlStringRGBA(playerColor);
         }
-        return playerColor.ToString();
+        else
+        {
+            var props = playerColor.GetType().GetProperties(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var prop in props)
+            {
+                if ((Color)prop.GetValue(null) == playerColor) { return prop.Name; }
+            }
+            return playerColor.ToString();
+        }
     }
 }

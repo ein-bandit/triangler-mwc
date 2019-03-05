@@ -3,6 +3,8 @@ const gamelogic = {};
 var gameEnd = document.getElementById("game-end");
 var gameWinner = document.getElementById("game-winner");
 
+var player = document.getElementById("player-triangle");
+
 gamelogic.changeState = function(state) {
   console.log("received state change - " + state);
   switch (state) {
@@ -83,7 +85,19 @@ var fireElement = document.getElementById(
 
 gamelogic.executeCommand = function(command) {
   console.log("received command - " + command);
-  switch (command) {
+
+  var clientCommand = command;
+  var extra = null;
+  if (command.indexOf(":") !== -1) {
+    var split = command.split(":");
+    clientCommand = split[0];
+    extra = split[1];
+  }
+  switch (clientCommand) {
+    case "color":
+      player.style.borderColor =
+        "transparent transparent #" + extra + " transparent";
+      break;
     case "boost_activated":
       toggleTapArea(boostElement, true);
       navigator.vibrate(500);
