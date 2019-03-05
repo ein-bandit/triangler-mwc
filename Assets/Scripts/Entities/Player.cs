@@ -64,8 +64,8 @@ public class Player : PlayerMovement, IPlayer
             case InputDataType.orientation:
                 if (sinInitialRotation == float.MinValue)
                 {
+                    Debug.Log("calculating new initial pos");
                     sinInitialRotation = Mathf.Cos(((Vector3)inputData).x * Mathf.Deg2Rad);
-                    //phone was initialized in default position - game can start.
                 }
                 //TODO: find a fix for holding phone inverted.
                 float sinRotation = Mathf.Cos(((Vector3)inputData).x * Mathf.Deg2Rad);
@@ -101,8 +101,7 @@ public class Player : PlayerMovement, IPlayer
                         }
                         break;
                     case "tap-area-reset_orientation":
-                        //reset position if something went wrong?
-                        sinInitialRotation = ((Vector3)inputData).x;
+                        sinInitialRotation = float.MinValue;
                         break;
                     default:
                         //do nothing, tap not recognized.

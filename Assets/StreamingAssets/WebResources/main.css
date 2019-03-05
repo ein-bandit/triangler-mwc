@@ -90,13 +90,19 @@ body {
 .tapable-area.tap-area-stealth {
   bottom: 50%;
   right: 50%;
+  top: 10%;
 }
 .tapable-area.tap-area-boost {
   bottom: 50%;
   left: 50%;
+  top: 10%;
 }
 .tapable-area.tap-area-fire {
   top: 50%;
+}
+.tapable-area.tap-area-reset_orientation {
+  top: 5%;
+  bottom: 90%;
 }
 
 .tapable-area.tapped {
