@@ -849,6 +849,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 467836633643187204, guid: 90ae86749c1362044abd438706d2edcb,
+        type: 3}
+      propertyPath: webResourcesFolder
+      value: WebResources
+      objectReference: {fileID: 0}
+    - target: {fileID: 467836633643187204, guid: 90ae86749c1362044abd438706d2edcb,
+        type: 3}
+      propertyPath: InterpreterClassName
+      value: MyNetworkDataInterpreter
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 90ae86749c1362044abd438706d2edcb, type: 3}
 --- !u!1 &1528491952

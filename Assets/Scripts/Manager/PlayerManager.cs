@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MobileWebControl;
-using MobileWebControl.NetworkData;
-using MobileWebControl.NetworkData.InputData;
+using MobileWebControl.Network;
+using MobileWebControl.Network.Input;
+using MobileWebControl.Network.Output;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -65,7 +66,7 @@ public class PlayerManager : MonoBehaviour
     private IEnumerator DummyStart(Guid g)
     {
         yield return new WaitForSeconds(1f);
-        DataHolder s = new DataHolder(g, InputDataType.ready, null);
+        InputDataHolder s = new InputDataHolder(g, InputDataType.ready, null);
         ReceivePlayerInput(s);
     }
 
@@ -139,7 +140,7 @@ public class PlayerManager : MonoBehaviour
         );
     }
 
-    public void RegisterPlayer(DataHolder playerInfo)
+    public void RegisterPlayer(InputDataHolder playerInfo)
     {
         Guid playerGuid = (Guid)playerInfo.data;
         IPlayer player = InstantiatePlayer(false);
@@ -189,7 +190,7 @@ public class PlayerManager : MonoBehaviour
         return player;
     }
 
-    public void UnregisterPlayer(DataHolder playerInfo)
+    public void UnregisterPlayer(InputDataHolder playerInfo)
     {
         IPlayer player = playerToGuid.Forward[(Guid)playerInfo.identifier];
         PlayerConstraints constraints = playerConstraints[player];
@@ -210,7 +211,7 @@ public class PlayerManager : MonoBehaviour
     }
 
     //Gets called from NetworkEventDispatcher -> definitely a client / Player instance.
-    public void ReceivePlayerInput(DataHolder data)
+    public void ReceivePlayerInput(InputDataHolder data)
     {
         Player player = (Player)playerToGuid.Forward[(Guid)data.identifier];
 
