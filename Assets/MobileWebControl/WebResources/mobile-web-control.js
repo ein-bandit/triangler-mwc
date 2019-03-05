@@ -16,7 +16,8 @@ var clientActions = {
 };
 
 var mobileWebControl = {
-  connectClient: function() {
+  connectClient: function(overridenClientActions) {
+    clientActions = overridenClientActions;
     if (!connecting) {
       connecting = true;
 

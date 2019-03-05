@@ -5,25 +5,7 @@ var player = document.getElementById("player-triangle");
 
 const connectElement = document.getElementById("connect");
 var connectBtn = connectElement.getElementsByClassName("connect-btn")[0];
-
-//overriding client actions from mobile web control.
-clientActions.initialize = function() {
-  gamelogic.changeState("ready");
-};
-
-clientActions.onMessage = function() {
-  if (message.type === "command") {
-    gamelogic.executeCommand(message.data);
-  } else if (message.type === "change_state") {
-    gamelogic.changeState(message.data);
-  } else {
-    console.error("invalid data retrieved", message);
-  }
-};
-
-clientActions.onClose = function() {
-  gamelogic.changeState("connect");
-};
+var contentElement = document.getElementById("content");
 
 const gamelogic = {};
 gamelogic.changeState = function(state) {
@@ -177,5 +159,31 @@ const guiHelper = {
     setTimeout(() => {
       connectBtn.innerHTML = "connecting...";
     }, 300);
+
+    var webRTCMessageCallbacks = initializeWebRTCMessageCallbacks();
+    mobileWebControl.connectClient(webRTCMessageCallbacks);
+
+    function initializeWebRTCMessageCallbacks() {
+      //overriding client actions from mobile web control.
+      var actions = {};
+      actions.initialize = function() {
+        gamelogic.changeState("ready");
+      };
+
+      actions.onMessage = function(message) {
+        if (message.type === "command") {
+          gamelogic.executeCommand(message.data);
+        } else if (message.type === "change_state") {
+          gamelogic.changeState(message.data);
+        } else {
+          console.error("invalid data retrieved", message);
+        }
+      };
+
+      actions.onClose = function() {
+        gamelogic.changeState("connect");
+      };
+      return actions;
+    }
   }
 };

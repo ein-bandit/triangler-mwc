@@ -137,6 +137,7 @@ body {
 .tapable-area.tap-area-reset_orientation {
   top: 5%;
   bottom: 90%;
+  font-size: 0.75em;
 }
 
 .tapable-area.tapped {
