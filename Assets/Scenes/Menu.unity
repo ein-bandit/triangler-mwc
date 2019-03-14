@@ -859,8 +859,46 @@ PrefabInstance:
       propertyPath: InterpreterClassName
       value: MyNetworkDataInterpreter
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 4644100082564159877, guid: 90ae86749c1362044abd438706d2edcb,
+        type: 3}
+      propertyPath: webResourcesFolder
+      value: WebResources
+      objectReference: {fileID: 0}
+    - target: {fileID: 4644100082564159877, guid: 90ae86749c1362044abd438706d2edcb,
+        type: 3}
+      propertyPath: httpServerPort
+      value: 8880
+      objectReference: {fileID: 0}
+    - target: {fileID: 4644100082564159877, guid: 90ae86749c1362044abd438706d2edcb,
+        type: 3}
+      propertyPath: webRTCServerPort
+      value: 7770
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 0}
+    - {fileID: 4644100082564159877, guid: 90ae86749c1362044abd438706d2edcb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 90ae86749c1362044abd438706d2edcb, type: 3}
+--- !u!1 &1499073371 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8612085474575909895, guid: 90ae86749c1362044abd438706d2edcb,
+    type: 3}
+  m_PrefabInstance: {fileID: 1447432878}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1499073372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499073371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fea4b178b43a9d4cb8da577061c1545, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  httpServerPort: 8880
+  webResourcesFolder: WebResources
+  webRTCServerPort: 7770
 --- !u!1 &1528491952
 GameObject:
   m_ObjectHideFlags: 0

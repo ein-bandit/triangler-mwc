@@ -1,7 +1,7 @@
 //define which browser apis should be enabled and used to stream data.
 
 const config = {
-  serverPort: 7770,
+  serverPort: 8880,
   features: {
     tapDetection: {
       enabled: true,

@@ -22,13 +22,13 @@ public class QRCodeGenerator : MonoBehaviour
             }
             if (qRCodeArea.GetComponentInChildren<Text>())
             {
-                qRCodeArea.GetComponentInChildren<Text>().text = MobileWebControl.MobileWebController.instance.webServerAddress;
+                qRCodeArea.GetComponentInChildren<Text>().text = MobileWebControl.MobileWebController.Instance.webServerAddress;
             }
         }
     }
     public Texture2D GenerateQRCode()
     {
-        return GenerateQRCode(MobileWebControl.MobileWebController.instance.webServerAddress);
+        return GenerateQRCode(MobileWebControl.MobileWebController.Instance.webServerAddress);
     }
 
     public Texture2D GenerateQRCode(string address)

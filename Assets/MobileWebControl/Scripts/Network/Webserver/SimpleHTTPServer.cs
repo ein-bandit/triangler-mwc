@@ -8,7 +8,7 @@ using System.Threading;
 namespace MobileWebControl.Webserver
 {
     //geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
-    class SimpleHTTPServer
+    class SimpleHTTPServer : IWebServer
     {
         private readonly string _indexFile = "index.html";
 
@@ -91,14 +91,9 @@ namespace MobileWebControl.Webserver
         private int _port;
         private string _hostAddress;
 
-        private bool _isAlive;
-
-        public string PublicIPAddress
+        public string GetPublicIPAddress()
         {
-            get
-            {
-                return "http://" + _hostAddress + ":" + _port;
-            }
+            return "http://" + _hostAddress + ":" + _port;
         }
 
         public int Port
@@ -132,31 +127,25 @@ namespace MobileWebControl.Webserver
             this.Initialize(userPath, rootPath, port);
         }
 
-        /// <summary>
-        /// Stop server and dispose all functions.
-        /// </summary>
-        public void Stop()
-        {
-            _isAlive = false;
-            _listener.Stop();
-            _serverThread.Abort();
-        }
-
         private void Listen()
         {
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://*:" + _port.ToString() + "/");
             _listener.Start();
-            while (_isAlive)
+            while (true)
             {
                 try
                 {
                     HttpListenerContext context = _listener.GetContext();
                     Process(context);
                 }
-                catch (Exception ex)
+                catch (ThreadAbortException exception)
                 {
-                    UnityEngine.Debug.Log(ex);
+                    UnityEngine.Debug.Log($"Thread abortion initiated. {exception}");
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.Log(exception);
                 }
             }
         }
@@ -231,13 +220,12 @@ namespace MobileWebControl.Webserver
             this._userDirectory = userPath;
             this._rootDirectory = rootPath;
             this._port = port;
-            this._hostAddress = GetPublicIPAddress();
+            this._hostAddress = FindIPAddress();
             _serverThread = new Thread(this.Listen);
             _serverThread.Start();
-            _isAlive = true;
         }
 
-        private string GetPublicIPAddress()
+        private string FindIPAddress()
         {
             IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
             foreach (IPAddress addr in localIPs)
@@ -249,6 +237,12 @@ namespace MobileWebControl.Webserver
             }
             //return localhost if no valid address found.
             return IPAddress.Loopback.ToString();
+        }
+
+        public void CloseConnection()
+        {
+            _listener.Stop();
+            _serverThread.Abort();
         }
     }
 }

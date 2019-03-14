@@ -137,7 +137,7 @@ MonoBehaviour:
   steeringProbability: 0.75
   calculateActionTimeStepMin: 0.25
   calculateActionTimeStepMax: 5
-  aiType: 1
+  aiType: 0
   chasingRange: 250
 --- !u!33 &32077461966899480
 MeshFilter:

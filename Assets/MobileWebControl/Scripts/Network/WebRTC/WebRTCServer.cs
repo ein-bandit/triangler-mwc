@@ -16,7 +16,7 @@ using MobileWebControl.Network;
 namespace MobileWebControl.WebRTC
 {
     [Serializable]
-    public class WebRTCServer : IDisposable
+    public class WebRTCServer : IDisposable, IWebRTCServer
     {
         public class WebRtcSession
         {
@@ -146,7 +146,7 @@ namespace MobileWebControl.WebRTC
         {
             UnityEngine.Debug.Log($"OnDisconnect: {context.ConnectionInfo.Id}, {context.ConnectionInfo.ClientIpAddress}");
 
-            MobileWebController.instance.OnUnregisterClient(context.ConnectionInfo.Id);
+            MobileWebController.Instance.OnUnregisterClient(context.ConnectionInfo.Id);
 
             IWebSocketConnection ctx;
             UserList.TryRemove(context.ConnectionInfo.Id, out ctx);
@@ -190,7 +190,7 @@ namespace MobileWebControl.WebRTC
                             {
                                 var session = Streams[context.ConnectionInfo.Id] = new WebRtcSession();
 
-                                MobileWebController.instance.OnRegisterClient(context.ConnectionInfo.Id);
+                                MobileWebController.Instance.OnRegisterClient(context.ConnectionInfo.Id);
 
                                 using (var go = new ManualResetEvent(false))
                                 {
@@ -270,12 +270,12 @@ namespace MobileWebControl.WebRTC
                                         session.WebRtc.OnDataMessage += delegate (string dmsg)
                                         {
                                             //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
-                                            MobileWebController.instance.OnReceiveStringData(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.Instance.OnReceiveStringData(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
                                         {
-                                            MobileWebController.instance.OnReceiveBinaryData(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.Instance.OnReceiveBinaryData(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         // session.WebRtc.OnRenderRemote += delegate (IntPtr BGR24, uint w, uint h)
@@ -343,6 +343,11 @@ namespace MobileWebControl.WebRTC
             {
                 UnityEngine.Debug.LogError($"could not quit. ${e}");
             }
+        }
+
+        public void CloseConnection()
+        {
+            this.Dispose();
         }
     }
 }

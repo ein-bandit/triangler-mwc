@@ -118,13 +118,13 @@ public class PlayerManager : MonoBehaviour
     {
         foreach (Guid player in playerToGuid.GetKeys())
         {
-            MobileWebController.instance.SendMessageToClient(player, OutputDataType.command, data);
+            MobileWebController.Instance.SendMessageToClient(player, OutputDataType.command, data);
         }
     }
 
     public void SendMessageToClient(Player player, PlayerClientAction data)
     {
-        MobileWebController.instance.SendMessageToClient(
+        MobileWebController.Instance.SendMessageToClient(
             playerToGuid.Reverse[player],
             OutputDataType.command,
             Enum.GetName(typeof(PlayerClientAction), data)
@@ -133,7 +133,7 @@ public class PlayerManager : MonoBehaviour
 
     private void SendCustomMessageToClient(Player player, string data)
     {
-        MobileWebController.instance.SendMessageToClient(
+        MobileWebController.Instance.SendMessageToClient(
             playerToGuid.Reverse[player],
             OutputDataType.command,
             data
@@ -291,7 +291,7 @@ public class PlayerManager : MonoBehaviour
     {
         //wait for end of frame does crash unity (thread concurrency problem when just received message?)
         yield return new WaitForSeconds(delay);
-        MobileWebController.instance.SendMessageToClient(
+        MobileWebController.Instance.SendMessageToClient(
             playerGuid,
             OutputDataType.change_state,
             Enum.GetName(typeof(PlayerStatus), status)
