@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using MobileWebControl;
 using UnityEngine;
 
 public class MyMobileWebControlInitializer : MobileWebControlInitializer
 {
     private void Start()
     {
+        //using default webserver and webrtc server.
         //use default ports - override in inspector possible.
-        this.Initialize();
+        this.InitializeMobileWebControl(new MyNetworkDataInterpreter());
     }
 }

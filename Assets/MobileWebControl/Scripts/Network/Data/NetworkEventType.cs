@@ -1,4 +1,4 @@
-namespace MobileWebControl.Network
+namespace MobileWebControl.Network.Data
 {
     public enum NetworkEventType
     {

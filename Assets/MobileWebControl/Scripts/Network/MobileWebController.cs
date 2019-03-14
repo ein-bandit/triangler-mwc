@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using LitJson;
 using UnityEngine;
 using UnityEngine.UI;
-using MobileWebControl.WebRTC;
-using MobileWebControl.Webserver;
 using System.IO;
-using MobileWebControl.Network;
-using MobileWebControl.Network.Output;
-using MobileWebControl.Network.Input;
+using MobileWebControl.Network.WebServer;
+using MobileWebControl.Network.WebRTC;
+using MobileWebControl.Network.Data;
 
-namespace MobileWebControl
+namespace MobileWebControl.Network
 {
 
     //is unitys interface to actions on other threads (webserver, webrtcserver).
@@ -22,8 +20,6 @@ namespace MobileWebControl
     //therefore events are collected and distributed in next update.
     public class MobileWebController
     {
-        public OutputDataSendMode outputDataSendMode;
-
         public string webServerAddress
         {
             get
@@ -46,7 +42,6 @@ namespace MobileWebControl
             {
                 if (instance == null)
                 {
-                    UnityEngine.Debug.Log("creating new instance");
                     instance = new MobileWebController();
                 }
                 return instance;
@@ -64,19 +59,11 @@ namespace MobileWebControl
             this.interpreter = networkDataInterpreter;
         }
 
-        public void OnReceiveStringData(IComparable identifier, string message)
+        public void OnReceiveData(IComparable identifier, string message)
         {
             PassReceivedMessage(
                 NetworkEventType.Network_Input_Event,
-                interpreter.InterpretInputDataFromText(identifier, message)
-            );
-        }
-
-        public void OnReceiveBinaryData(IComparable identifier, byte[] message)
-        {
-            PassReceivedMessage(
-                NetworkEventType.Network_Input_Event,
-                interpreter.InterpretInputDataFromBytes(identifier, message)
+                interpreter.InterpretInputDataFromJson(identifier, message)
             );
         }
 
@@ -102,26 +89,14 @@ namespace MobileWebControl
             NetworkEventDispatcher.TriggerEvent(eventType, data);
         }
 
-        public void SendMessageToClient(IComparable identifier, OutputDataType type, object data)
+        public void SendMessageToClient(IComparable identifier, System.Enum type, object data)
         {
-            if (outputDataSendMode == OutputDataSendMode.text)
-            {
-                webRTCServer.SendWebRTCMessage(identifier, convertOutputToString(type, data));
-            }
-            else if (outputDataSendMode == OutputDataSendMode.bytes)
-            {
-                webRTCServer.SendWebRTCMessage(identifier, convertOutputToBytes(type, data));
-            }
+            webRTCServer.SendWebRTCMessage(identifier, convertDataForSending(type, data));
         }
 
-        private string convertOutputToString(OutputDataType type, object data)
+        private string convertDataForSending(System.Enum type, object data)
         {
-            return interpreter.ConvertOutputDataToText(type, data);
-        }
-
-        private byte[] convertOutputToBytes(OutputDataType type, object data)
-        {
-            return interpreter.ConvertOutputDataToBytes(type, data);
+            return interpreter.ConvertOutputDataToJson(type, data);
         }
 
         public void Cleanup()
@@ -129,7 +104,6 @@ namespace MobileWebControl
             isAlive = false;
             NetworkEventDispatcher.ClearEventDictionary();
 
-            Debug.Log("shutting down.");
             webRTCServer.CloseConnection();
             webServer.CloseConnection();
         }

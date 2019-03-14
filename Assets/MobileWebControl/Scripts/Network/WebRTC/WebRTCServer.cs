@@ -12,8 +12,9 @@ using Fleck;
 using LitJson;
 using UnityToolbag;
 using MobileWebControl.Network;
+using System.Text;
 
-namespace MobileWebControl.WebRTC
+namespace MobileWebControl.Network.WebRTC
 {
     [Serializable]
     public class WebRTCServer : IDisposable, IWebRTCServer
@@ -29,6 +30,14 @@ namespace MobileWebControl.WebRTC
                 Cancel = new CancellationTokenSource();
             }
         }
+
+        private enum SendMode
+        {
+            text,
+            bytes
+        }
+
+        private SendMode sendMode = SendMode.text;
 
         public readonly ConcurrentDictionary<Guid, IWebSocketConnection> UserList = new ConcurrentDictionary<Guid, IWebSocketConnection>();
         public readonly ConcurrentDictionary<Guid, WebRtcSession> Streams = new ConcurrentDictionary<Guid, WebRtcSession>();
@@ -164,12 +173,15 @@ namespace MobileWebControl.WebRTC
 
         public void SendWebRTCMessage(IComparable identifier, string message)
         {
-            Streams[(Guid)identifier].WebRtc.DataChannelSendText(message);
-        }
-
-        public void SendWebRTCMessage(IComparable identifier, byte[] message)
-        {
-            Streams[(Guid)identifier].WebRtc.DataChannelSendData(message, message.Length);
+            if (sendMode == SendMode.text)
+            {
+                Streams[(Guid)identifier].WebRtc.DataChannelSendText(message);
+            }
+            else if (sendMode == SendMode.bytes)
+            {
+                byte[] messageAsBytes = ConvertStringToByteArray(message);
+                Streams[(Guid)identifier].WebRtc.DataChannelSendData(messageAsBytes, messageAsBytes.Length);
+            }
         }
 
         private void OnReceive(IWebSocketConnection context, string msg)
@@ -270,12 +282,12 @@ namespace MobileWebControl.WebRTC
                                         session.WebRtc.OnDataMessage += delegate (string dmsg)
                                         {
                                             //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
-                                            MobileWebController.Instance.OnReceiveStringData(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, dmsg);
                                         };
 
                                         session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
                                         {
-                                            MobileWebController.Instance.OnReceiveBinaryData(context.ConnectionInfo.Id, dmsg);
+                                            MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, ConvertByteArrayToString(dmsg));
                                         };
 
                                         // session.WebRtc.OnRenderRemote += delegate (IntPtr BGR24, uint w, uint h)
@@ -348,6 +360,16 @@ namespace MobileWebControl.WebRTC
         public void CloseConnection()
         {
             this.Dispose();
+        }
+
+        private string ConvertByteArrayToString(byte[] data)
+        {
+            return Encoding.UTF8.GetString(data);
+        }
+
+        private byte[] ConvertStringToByteArray(string data)
+        {
+            return Encoding.UTF8.GetBytes(data);
         }
     }
 }

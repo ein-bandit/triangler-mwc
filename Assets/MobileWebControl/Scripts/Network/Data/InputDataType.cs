@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MobileWebControl.Network.Input
+namespace MobileWebControl.Network.Data
 {
     public enum InputDataType
     {
@@ -16,11 +16,7 @@ namespace MobileWebControl.Network.Input
         unregister,
         ready,
 
-        invalid,
-
-        //maybe added later
-        camera,
-        microfon
+        invalid
     }
 
 }

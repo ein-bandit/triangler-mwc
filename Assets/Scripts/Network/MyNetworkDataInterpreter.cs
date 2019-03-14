@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LitJson;
-using MobileWebControl.Network.Input;
-using MobileWebControl.Network;
+using MobileWebControl.Network.Data;
 using UnityEngine;
 using UnityToolbag;
-using MobileWebControl.Network.Output;
 
 //you can use your own enum types as well, just return the enum element.
 //identifier is Guid for this example (available from library)
@@ -27,13 +25,7 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
     private const String dataTypeKey = "type";
     private const String dataObjectKey = "data";
 
-    public InputDataHolder InterpretInputDataFromBytes(IComparable identifier, byte[] bytes)
-    {
-        InputData p = ParseMessage(Encoding.UTF8.GetString(bytes));
-        return new InputDataHolder(identifier, p.type, p.data);
-    }
-
-    public InputDataHolder InterpretInputDataFromText(IComparable identifier, string message)
+    public InputDataHolder InterpretInputDataFromJson(IComparable identifier, string message)
     {
         InputData p = ParseMessage(message);
         return new InputDataHolder(identifier, p.type, p.data);
@@ -124,14 +116,9 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
         }
     }
 
-    public string ConvertOutputDataToText(Enum outputDataType, object outputData)
+    public string ConvertOutputDataToJson(Enum outputDataType, object outputData)
     {
         return CreateJsonOutput(outputDataType, outputData).ToJson();
-    }
-
-    public byte[] ConvertOutputDataToBytes(Enum outputDataType, object outputData)
-    {
-        return Encoding.UTF8.GetBytes(CreateJsonOutput(outputDataType, outputData).ToJson());
     }
 
     private JsonData CreateJsonOutput(Enum outputDataType, object outputData)

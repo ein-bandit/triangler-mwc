@@ -1,6 +1,6 @@
 using System;
 
-namespace MobileWebControl.Network.Input
+namespace MobileWebControl.Network.Data
 {
     public class InputDataHolder
     {

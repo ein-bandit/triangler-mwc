@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace MobileWebControl.Webserver
+namespace MobileWebControl.Network.WebServer
 {
     //geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
     class SimpleHTTPServer : IWebServer
@@ -141,7 +141,8 @@ namespace MobileWebControl.Webserver
                 }
                 catch (ThreadAbortException exception)
                 {
-                    UnityEngine.Debug.Log($"Thread abortion initiated. {exception}");
+                    //nothing to do here. Thread.Abort throws exception. Initiated from Unitys OnApplicationQuit
+                    UnityEngine.Debug.Log($"Successfully aborted webserver thread - catched {exception.GetType()}.");
                 }
                 catch (Exception exception)
                 {

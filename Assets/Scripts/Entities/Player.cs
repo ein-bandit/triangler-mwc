@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using MobileWebControl.Network.Input;
+using MobileWebControl.Network.Data;
 using UnityEngine;
 
 public class Player : PlayerMovement, IPlayer
