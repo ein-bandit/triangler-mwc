@@ -1,5 +1,4 @@
 ﻿using System;
-using LitJson;
 
 namespace MobileWebControl.Network.WebRTC
 {
