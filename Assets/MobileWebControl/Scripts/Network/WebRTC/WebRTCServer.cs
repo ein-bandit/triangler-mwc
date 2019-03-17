@@ -1,21 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Collections.Concurrent;
 using WebRtc.NET;
 using System;
-
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Fleck;
 using LitJson;
-using UnityToolbag;
 using MobileWebControl.Network;
 using System.Text;
+using UnityEngine;
 
 namespace MobileWebControl.Network.WebRTC
 {
+    //from WebRTC.net-Staging project
     [Serializable]
     public class WebRTCServer : IWebRTCServer
     {
@@ -170,7 +169,7 @@ namespace MobileWebControl.Network.WebRTC
                             while (!session.Cancel.Token.IsCancellationRequested &&
                                session.WebRtc.ProcessMessages(1000))
                             {
-                                //Logger.Log(".");
+                                //UnityEngine.Debug.Log(".");
                             }
                             session.WebRtc.ProcessMessages(1000);
                         }

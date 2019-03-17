@@ -7,14 +7,160 @@ using System.Threading;
 
 namespace MobileWebControl.Network.WebServer
 {
-    //geklaut von: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
+    //inspired by: https://answers.unity.com/questions/1245582/create-a-simple-http-server-on-the-streaming-asset.html
     class SimpleHTTPServer : IWebServer
     {
         private readonly string _indexFile = "index.html";
 
-        private static IDictionary<string, string> _mimeTypeMappings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+        private static IDictionary<string, string> _mimeTypeMappings;
+        private Thread _serverThread;
+        private string _userDirectory;
+        private string _rootDirectory;
+        private HttpListener _listener;
+
+        private int _port;
+        private string _hostAddress;
+
+
+        /// <summary>
+        /// Construct server with given port.
+        /// </summary>
+        /// <param name="userPath">Directory path to serve.</param>
+        /// <param name="rootPpath">Directory path to serve if not found in user path.</param>
+        /// <param name="port">Port of the server.</param>
+        public SimpleHTTPServer(string userPath, string rootPath, int port)
+        {
+            this.Initialize(userPath, rootPath, port);
+        }
+
+        private void Listen()
+        {
+            _listener = new HttpListener();
+            _listener.Prefixes.Add("http://*:" + _port.ToString() + "/");
+            _listener.Start();
+            while (true)
+            {
+                try
+                {
+                    HttpListenerContext context = _listener.GetContext();
+                    Process(context);
+                }
+                catch (ThreadAbortException exception)
+                {
+                    //nothing to do here. Thread.Abort throws exception. Initiated from Unitys OnApplicationQuit
+                    UnityEngine.Debug.Log($"Successfully aborted webserver thread - catched {exception.GetType()}.");
+                }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.Log(exception);
+                }
+            }
+        }
+
+        public string GetPublicIPAddress()
+        {
+            return "http://" + _hostAddress + ":" + _port;
+        }
+
+        private string GetPathToFile(string filename)
+        {
+            string userFilePath = Path.Combine(_userDirectory, filename);
+            string rootFilePath = Path.Combine(_rootDirectory, filename);
+
+            if (userFilePath.Length > filename.Length && File.Exists(userFilePath))
+            {
+                return userFilePath;
+            }
+            else if (File.Exists(rootFilePath))
+            {
+                return rootFilePath;
+            }
+            return null;
+        }
+
+        private void Process(HttpListenerContext context)
+        {
+            string filename = context.Request.Url.AbsolutePath.Substring(1);
+
+            if (string.IsNullOrEmpty(filename))
+            {
+                filename = _indexFile;
+            }
+
+            string pathToFile = GetPathToFile(filename);
+
+            if (pathToFile != null)
+            {
+                try
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    Stream input = new FileStream(pathToFile, FileMode.Open);
+
+                    //Adding permanent http response headers
+                    string mime;
+                    context.Response.ContentType = _mimeTypeMappings.TryGetValue(Path.GetExtension(pathToFile), out mime) ? mime : "application/octet-stream";
+                    context.Response.ContentLength64 = input.Length;
+                    context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
+                    context.Response.AddHeader("Last-Modified", System.IO.File.GetLastWriteTime(pathToFile).ToString("r"));
+
+                    byte[] buffer = new byte[1024 * 16];
+                    int nbytes;
+                    while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
+                        context.Response.OutputStream.Write(buffer, 0, nbytes);
+                    input.Close();
+
+                    context.Response.OutputStream.Flush();
+                }
+                catch (Exception exception)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    UnityEngine.Debug.Log(exception);
+                }
+
+            }
+            else
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            }
+
+            context.Response.OutputStream.Close();
+        }
+
+        private void Initialize(string userPath, string rootPath, int port)
+        {
+            InitMimeTypeMappingsDictionary();
+            this._userDirectory = userPath;
+            this._rootDirectory = rootPath;
+            this._port = port;
+            this._hostAddress = FindIPAddress();
+            _serverThread = new Thread(this.Listen);
+            _serverThread.Start();
+        }
+
+        private string FindIPAddress()
+        {
+            IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+            foreach (IPAddress addr in localIPs)
+            {
+                if (addr.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return addr.ToString();
+                }
+            }
+            //return localhost if no valid address found.
+            return IPAddress.Loopback.ToString();
+        }
+
+        public void CloseConnection()
+        {
+            _listener.Stop();
+            _serverThread.Abort();
+        }
+
+        private void InitMimeTypeMappingsDictionary()
+        {
+            _mimeTypeMappings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
                      {
-                     #region extension to MIME type list
                              { ".asf", "video/x-ms-asf" },
                              { ".asx", "video/x-ms-asf" },
                              { ".avi", "video/x-msvideo" },
@@ -81,169 +227,7 @@ namespace MobileWebControl.Network.WebServer
                              { ".xml", "text/xml" },
                              { ".xpi", "application/x-xpinstall" },
                              { ".zip", "application/zip" },
-                     #endregion
                      };
-        private Thread _serverThread;
-        private string _userDirectory;
-        private string _rootDirectory;
-        private HttpListener _listener;
-
-        private int _port;
-        private string _hostAddress;
-
-        public string GetPublicIPAddress()
-        {
-            return "http://" + _hostAddress + ":" + _port;
-        }
-
-        public int Port
-        {
-            get { return _port; }
-            private set { }
-        }
-
-        /// <summary>
-        /// Construct server with given port.
-        /// </summary>
-        /// <param name="userPath">Directory path to serve.</param>
-        /// <param name="rootPpath">Directory path to serve if not found in user path.</param>
-        /// <param name="port">Port of the server.</param>
-        public SimpleHTTPServer(string userPath, string rootPath, int port)
-        {
-            this.Initialize(userPath, rootPath, port);
-        }
-
-        /// <summary>
-        /// Construct server with suitable port.
-        /// </summary>
-        /// <param name="userPath">Directory path to serve.</param>
-        /// <param name="rootPath">Directory path to serve if not found in user path.</param>
-        public SimpleHTTPServer(string userPath, string rootPath)
-        {
-            TcpListener l = new TcpListener(IPAddress.Loopback, 0);
-            l.Start();
-            int port = ((IPEndPoint)l.LocalEndpoint).Port;
-            l.Stop();
-            this.Initialize(userPath, rootPath, port);
-        }
-
-        private void Listen()
-        {
-            _listener = new HttpListener();
-            _listener.Prefixes.Add("http://*:" + _port.ToString() + "/");
-            _listener.Start();
-            while (true)
-            {
-                try
-                {
-                    HttpListenerContext context = _listener.GetContext();
-                    Process(context);
-                }
-                catch (ThreadAbortException exception)
-                {
-                    //nothing to do here. Thread.Abort throws exception. Initiated from Unitys OnApplicationQuit
-                    UnityEngine.Debug.Log($"Successfully aborted webserver thread - catched {exception.GetType()}.");
-                }
-                catch (Exception exception)
-                {
-                    UnityEngine.Debug.Log(exception);
-                }
-            }
-        }
-
-        private string GetPathToFile(string filename)
-        {
-            string userFilePath = Path.Combine(_userDirectory, filename);
-            string rootFilePath = Path.Combine(_rootDirectory, filename);
-
-            if (userFilePath.Length > filename.Length && File.Exists(userFilePath))
-            {
-                return userFilePath;
-            }
-            else if (File.Exists(rootFilePath))
-            {
-                return rootFilePath;
-            }
-            return null;
-        }
-
-        private void Process(HttpListenerContext context)
-        {
-            string filename = context.Request.Url.AbsolutePath.Substring(1);
-
-            if (string.IsNullOrEmpty(filename))
-            {
-                filename = _indexFile;
-            }
-
-            string pathToFile = GetPathToFile(filename);
-
-            if (pathToFile != null)
-            {
-                try
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.OK;
-                    Stream input = new FileStream(pathToFile, FileMode.Open);
-
-                    //Adding permanent http response headers
-                    string mime;
-                    context.Response.ContentType = _mimeTypeMappings.TryGetValue(Path.GetExtension(pathToFile), out mime) ? mime : "application/octet-stream";
-                    context.Response.ContentLength64 = input.Length;
-                    context.Response.AddHeader("Date", DateTime.Now.ToString("r"));
-                    context.Response.AddHeader("Last-Modified", System.IO.File.GetLastWriteTime(pathToFile).ToString("r"));
-
-                    byte[] buffer = new byte[1024 * 16];
-                    int nbytes;
-                    while ((nbytes = input.Read(buffer, 0, buffer.Length)) > 0)
-                        context.Response.OutputStream.Write(buffer, 0, nbytes);
-                    input.Close();
-
-
-                    context.Response.OutputStream.Flush();
-                }
-                catch (Exception ex)
-                {
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    UnityEngine.Debug.Log(ex);
-                }
-
-            }
-            else
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            }
-
-            context.Response.OutputStream.Close();
-        }
-
-        private void Initialize(string userPath, string rootPath, int port)
-        {
-            this._userDirectory = userPath;
-            this._rootDirectory = rootPath;
-            this._port = port;
-            this._hostAddress = FindIPAddress();
-            _serverThread = new Thread(this.Listen);
-            _serverThread.Start();
-        }
-
-        private string FindIPAddress()
-        {
-            IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
-            foreach (IPAddress addr in localIPs)
-            {
-                if (addr.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return addr.ToString();
-                }
-            }
-            //return localhost if no valid address found.
-            return IPAddress.Loopback.ToString();
-        }
-
-        public void CloseConnection()
-        {
-            _listener.Stop();
-            _serverThread.Abort();
         }
     }
 }
