@@ -17,104 +17,21 @@ using System.Text;
 namespace MobileWebControl.Network.WebRTC
 {
     [Serializable]
-    public class WebRTCServer : IDisposable, IWebRTCServer
+    public class WebRTCServer : IWebRTCServer
     {
-        public class WebRtcSession
-        {
-            public readonly WebRtcNative WebRtc;
-            public readonly CancellationTokenSource Cancel;
+        private WebSocketServer webSocketServer;
 
-            public WebRtcSession()
-            {
-                WebRtc = new WebRtcNative();
-                Cancel = new CancellationTokenSource();
-            }
-        }
-
-        private enum SendMode
-        {
-            text,
-            bytes
-        }
+        public readonly ConcurrentDictionary<Guid, IWebSocketConnection> UserList =
+            new ConcurrentDictionary<Guid, IWebSocketConnection>();
+        public readonly ConcurrentDictionary<Guid, WebRtcSession> Streams =
+            new ConcurrentDictionary<Guid, WebRtcSession>();
 
         private SendMode sendMode = SendMode.text;
 
-        public readonly ConcurrentDictionary<Guid, IWebSocketConnection> UserList = new ConcurrentDictionary<Guid, IWebSocketConnection>();
-        public readonly ConcurrentDictionary<Guid, WebRtcSession> Streams = new ConcurrentDictionary<Guid, WebRtcSession>();
-
-        WebSocketServer server;
-
-        public WebRTCServer(int port) : this("ws://0.0.0.0:" + port)
-        {
-        }
-
-        public WebRTCServer(string URL)
-        {
-            server = new WebSocketServer(URL);
-            server.Start(socket =>
-            {
-                socket.OnOpen = () =>
-                   {
-                       try
-                       {
-                           OnConnected(socket);
-                       }
-                       catch (Exception ex)
-                       {
-                           UnityEngine.Debug.LogError($"OnConnected: {ex}");
-                       }
-                   };
-                socket.OnMessage = message =>
-                {
-                    try
-                    {
-                        OnReceive(socket, message);
-                    }
-                    catch (Exception ex)
-                    {
-                        UnityEngine.Debug.LogError($"OnReceive: {ex}");
-                    }
-                };
-                socket.OnClose = () =>
-                {
-                    try
-                    {
-                        OnDisconnect(socket);
-                    }
-                    catch (Exception ex)
-                    {
-                        UnityEngine.Debug.LogError($"OnDisconnect: {ex}");
-                    }
-                };
-                socket.OnError = (e) =>
-                {
-                    try
-                    {
-                        OnDisconnect(socket);
-                        socket.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        UnityEngine.Debug.LogError($"OnError: {ex}");
-                    }
-                };
-            });
-        }
-
-        private void OnConnected(IWebSocketConnection context)
-        {
-            if (UserList.Count < ClientLimit)
-            {
-                //UnityEngine.Debug.Log($"OnConnected: {context.ConnectionInfo.Id}, {context.ConnectionInfo.ClientIpAddress}");
-
-                UserList[context.ConnectionInfo.Id] = context;
-            }
-            else
-            {
-                UnityEngine.Debug.Log($"OverLimit, Closed: {context.ConnectionInfo.Id}, {context.ConnectionInfo.ClientIpAddress}");
-                context.Close();
-            }
-        }
+        private readonly string[] stunServers = {
+            "stun:stun.anyfirewall.com:3478",
+            "stun:stun.stunprotocol.org:3478"
+            };
 
         private int clientLimit = 4;
         public int ClientLimit
@@ -143,33 +60,188 @@ namespace MobileWebControl.Network.WebRTC
             }
         }
 
-        public int StreamsCount
+        public const string offer = "offer";
+        public const string onicecandidate = "onicecandidate";
+
+
+        public WebRTCServer(int port) : this("ws://0.0.0.0:" + port)
         {
-            get
+        }
+
+        public WebRTCServer(string URL)
+        {
+            webSocketServer = new WebSocketServer(URL);
+            webSocketServer.Start(socket =>
             {
-                return Streams.Count;
+                socket.OnOpen = () => { OnConnected(socket); };
+                socket.OnMessage = message => { OnReceive(socket, message); };
+                socket.OnClose = () => { OnDisconnect(socket); };
+                socket.OnError = (error) =>
+                {
+                    OnDisconnect(socket);
+                    socket.Close();
+                };
+            });
+        }
+
+        private void OnConnected(IWebSocketConnection context)
+        {
+            if (UserList.Count < ClientLimit)
+            {
+                UserList[context.ConnectionInfo.Id] = context;
+            }
+            else
+            {
+                context.Close();
             }
         }
 
         private void OnDisconnect(IWebSocketConnection context)
         {
-            UnityEngine.Debug.Log($"OnDisconnect: {context.ConnectionInfo.Id}, {context.ConnectionInfo.ClientIpAddress}");
-
             MobileWebController.Instance.OnUnregisterClient(context.ConnectionInfo.Id);
 
-            IWebSocketConnection ctx;
-            UserList.TryRemove(context.ConnectionInfo.Id, out ctx);
+            UserList.TryRemove(context.ConnectionInfo.Id, out IWebSocketConnection ctx);
 
             WebRtcSession s;
             if (Streams.TryRemove(context.ConnectionInfo.Id, out s))
             {
                 s.Cancel.Cancel();
             }
-
         }
 
-        public const string offer = "offer";
-        public const string onicecandidate = "onicecandidate";
+        private void OnReceive(IWebSocketConnection context, string message)
+        {
+            if (!message.Contains("command")) return;
+
+            if (!UserList.ContainsKey(context.ConnectionInfo.Id)) return;
+
+            JsonData jsonMessage = JsonMapper.ToObject(message);
+            string command = jsonMessage["command"].ToString();
+
+            switch (command)
+            {
+                case offer:
+                    {
+                        if (!Streams.ContainsKey(context.ConnectionInfo.Id))
+                        {
+                            MobileWebController.Instance.OnRegisterClient(context.ConnectionInfo.Id);
+
+                            WebRtcSession session = Streams[context.ConnectionInfo.Id] = new WebRtcSession();
+
+                            SetupWebRTCConnection(session, context, jsonMessage);
+                        }
+                    }
+                    break;
+
+                case onicecandidate:
+                    {
+                        JsonData c = jsonMessage["candidate"];
+
+                        int sdpMLineIndex = (int)c["sdpMLineIndex"];
+                        string sdpMid = c["sdpMid"].ToString();
+                        string candidate = c["candidate"].ToString();
+
+                        Streams[context.ConnectionInfo.Id].WebRtc.AddIceCandidate(sdpMid, sdpMLineIndex, candidate);
+                    }
+                    break;
+            }
+        }
+
+        private void SetupWebRTCConnection(WebRtcSession session, IWebSocketConnection context, JsonData jsonMessage)
+        {
+            using (ManualResetEvent manualResetEvent = new ManualResetEvent(false))
+            {
+                Task task = Task.Factory.StartNew(() =>
+                {
+                    WebRtcNative.InitializeSSL();
+
+                    using (session.WebRtc)
+                    {
+                        foreach (string stunServer in stunServers)
+                        {
+                            session.WebRtc.AddServerConfig(stunServer, string.Empty, string.Empty);
+                        }
+
+                        bool success = session.WebRtc.InitializePeerConnection();
+                        if (success)
+                        {
+                            manualResetEvent.Set();
+
+                            while (!session.Cancel.Token.IsCancellationRequested &&
+                               session.WebRtc.ProcessMessages(1000))
+                            {
+                                //Logger.Log(".");
+                            }
+                            session.WebRtc.ProcessMessages(1000);
+                        }
+                        else
+                        {
+                            context.Close();
+                        }
+                    }
+
+                }, session.Cancel.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+                if (manualResetEvent.WaitOne(9999))
+                {
+                    InitWebRTCCallbacks(session, context, jsonMessage);
+                }
+            }
+        }
+
+        private void InitWebRTCCallbacks(WebRtcSession session, IWebSocketConnection context, JsonData jsonMessage)
+        {
+            session.WebRtc.OnIceCandidate += delegate (string sdp_mid, int sdp_mline_index, string sdp)
+            {
+                if (context.IsAvailable)
+                {
+                    JsonData j = new JsonData();
+                    j["command"] = "OnIceCandidate";
+                    j["sdp_mid"] = sdp_mid;
+                    j["sdp_mline_index"] = sdp_mline_index;
+                    j["sdp"] = sdp;
+                    context.Send(j.ToJson());
+                }
+            };
+
+            session.WebRtc.OnSuccessAnswer += delegate (string sdp)
+            {
+                if (context.IsAvailable)
+                {
+                    JsonData j = new JsonData();
+                    j["command"] = "OnSuccessAnswer";
+                    j["sdp"] = sdp;
+                    context.Send(j.ToJson());
+                }
+            };
+
+            session.WebRtc.OnFailure += delegate (string error)
+            {
+                UnityEngine.Debug.Log($"WebRTC Callback OnFailure: {context.ConnectionInfo.Id}, {error}");
+            };
+
+            session.WebRtc.OnError += delegate (string error)
+            {
+                UnityEngine.Debug.Log($"OnError: {context.ConnectionInfo.Id}, {error}");
+            };
+
+            session.WebRtc.OnDataMessage += delegate (string dmsg)
+            {
+                MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, dmsg);
+            };
+
+            session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
+            {
+                MobileWebController.Instance.OnReceiveData(
+                    context.ConnectionInfo.Id,
+                    ConvertByteArrayToString(dmsg)
+                    );
+            };
+
+            //send offer request after registering handlers.
+            string desc_sdp = jsonMessage["desc"]["sdp"].ToString();
+            session.WebRtc.OnOfferRequest(desc_sdp);
+        }
 
         public void SendWebRTCMessage(IComparable identifier, string message)
         {
@@ -184,184 +256,6 @@ namespace MobileWebControl.Network.WebRTC
             }
         }
 
-        private void OnReceive(IWebSocketConnection context, string msg)
-        {
-            //UnityEngine.Debug.Log($"OnReceive {context.ConnectionInfo.Id}: {msg}");
-            if (!msg.Contains("command")) return;
-
-            if (UserList.ContainsKey(context.ConnectionInfo.Id))
-            {
-                JsonData msgJson = JsonMapper.ToObject(msg);
-                string command = msgJson["command"].ToString();
-
-                switch (command)
-                {
-                    case offer:
-                        {
-                            if (UserList.Count <= ClientLimit && !Streams.ContainsKey(context.ConnectionInfo.Id))
-                            {
-                                var session = Streams[context.ConnectionInfo.Id] = new WebRtcSession();
-
-                                MobileWebController.Instance.OnRegisterClient(context.ConnectionInfo.Id);
-
-                                using (var go = new ManualResetEvent(false))
-                                {
-                                    var t = Task.Factory.StartNew(() =>
-                                    {
-                                        WebRtcNative.InitializeSSL();
-
-
-                                        using (session.WebRtc)
-                                        {
-                                            //session.WebRtc.AddServerConfig("stun:stun.l.google.com:19302", string.Empty, string.Empty);
-                                            session.WebRtc.AddServerConfig("stun:stun.anyfirewall.com:3478", string.Empty, string.Empty);
-                                            session.WebRtc.AddServerConfig("stun:stun.stunprotocol.org:3478", string.Empty, string.Empty);
-                                            //session.WebRtc.AddServerConfig("turn:192.168.0.100:3478", "test", "test");
-
-                                            //session.WebRtc.SetAudio(false);
-
-                                            var ok = session.WebRtc.InitializePeerConnection();
-                                            if (ok)
-                                            {
-                                                go.Set();
-
-                                                // javascript side makes the offer in this demo
-                                                //session.WebRtc.CreateDataChannel("msgDataChannel");
-
-                                                while (!session.Cancel.Token.IsCancellationRequested &&
-                                                       session.WebRtc.ProcessMessages(1000))
-                                                {
-                                                    //UnityEngine.Debug.Log(".");
-                                                }
-                                                session.WebRtc.ProcessMessages(1000);
-                                            }
-                                            else
-                                            {
-                                                context.Close();
-                                            }
-                                        }
-
-                                    }, session.Cancel.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
-                                    if (go.WaitOne(9999))
-                                    {
-                                        session.WebRtc.OnIceCandidate += delegate (string sdp_mid, int sdp_mline_index, string sdp)
-                                        {
-                                            if (context.IsAvailable)
-                                            {
-                                                JsonData j = new JsonData();
-                                                j["command"] = "OnIceCandidate";
-                                                j["sdp_mid"] = sdp_mid;
-                                                j["sdp_mline_index"] = sdp_mline_index;
-                                                j["sdp"] = sdp;
-                                                context.Send(j.ToJson());
-                                            }
-                                        };
-
-                                        session.WebRtc.OnSuccessAnswer += delegate (string sdp)
-                                        {
-                                            if (context.IsAvailable)
-                                            {
-                                                JsonData j = new JsonData();
-                                                j["command"] = "OnSuccessAnswer";
-                                                j["sdp"] = sdp;
-                                                context.Send(j.ToJson());
-                                            }
-                                        };
-
-                                        session.WebRtc.OnFailure += delegate (string error)
-                                        {
-                                            UnityEngine.Debug.Log($"OnFailure: {error}");
-                                        };
-
-                                        session.WebRtc.OnError += delegate (string error)
-                                        {
-                                            UnityEngine.Debug.Log($"OnError: {error}");
-                                        };
-
-                                        session.WebRtc.OnDataMessage += delegate (string dmsg)
-                                        {
-                                            //UnityEngine.Debug.Log($"data received: {dmsg} {dmsg.Length}");
-                                            MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, dmsg);
-                                        };
-
-                                        session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
-                                        {
-                                            MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, ConvertByteArrayToString(dmsg));
-                                        };
-
-                                        // session.WebRtc.OnRenderRemote += delegate (IntPtr BGR24, uint w, uint h)
-                                        // {
-                                        //     OnRenderRemote(BGR24, w, h);
-                                        // };
-
-                                        // session.WebRtc.OnRenderLocal += delegate (IntPtr BGR24, uint w, uint h)
-                                        // {
-                                        //     OnRenderLocal(BGR24, w, h);
-                                        // };
-
-                                        var d = msgJson["desc"];
-                                        var s = d["sdp"].ToString();
-
-                                        session.WebRtc.OnOfferRequest(s);
-                                    }
-                                }
-
-                            }
-                        }
-                        break;
-
-                    case onicecandidate:
-                        {
-                            var c = msgJson["candidate"];
-
-                            var sdpMLineIndex = (int)c["sdpMLineIndex"];
-                            var sdpMid = c["sdpMid"].ToString();
-                            var candidate = c["candidate"].ToString();
-
-                            var session = Streams[context.ConnectionInfo.Id];
-                            {
-                                session.WebRtc.AddIceCandidate(sdpMid, sdpMLineIndex, candidate);
-                            }
-                        }
-                        break;
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            try
-            {
-                foreach (var s in Streams)
-                {
-                    if (!s.Value.Cancel.IsCancellationRequested)
-                    {
-                        UnityEngine.Debug.Log($"closing stream ${s.Value}");
-                        s.Value.Cancel.Cancel();
-                    }
-                }
-
-                foreach (IWebSocketConnection i in UserList.Values)
-                {
-                    i.Close();
-                }
-
-                server.Dispose();
-                UserList.Clear();
-                Streams.Clear();
-            }
-            catch (Exception e)
-            {
-                UnityEngine.Debug.LogError($"could not quit. ${e}");
-            }
-        }
-
-        public void CloseConnection()
-        {
-            this.Dispose();
-        }
-
         private string ConvertByteArrayToString(byte[] data)
         {
             return Encoding.UTF8.GetString(data);
@@ -370,6 +264,44 @@ namespace MobileWebControl.Network.WebRTC
         private byte[] ConvertStringToByteArray(string data)
         {
             return Encoding.UTF8.GetBytes(data);
+        }
+
+        public void CloseConnection()
+        {
+            foreach (var s in Streams)
+            {
+                if (!s.Value.Cancel.IsCancellationRequested)
+                {
+                    s.Value.Cancel.Cancel();
+                }
+            }
+
+            foreach (IWebSocketConnection i in UserList.Values)
+            {
+                i.Close();
+            }
+
+            webSocketServer.Dispose();
+            UserList.Clear();
+            Streams.Clear();
+        }
+
+        public class WebRtcSession
+        {
+            public readonly WebRtcNative WebRtc;
+            public readonly CancellationTokenSource Cancel;
+
+            public WebRtcSession()
+            {
+                WebRtc = new WebRtcNative();
+                Cancel = new CancellationTokenSource();
+            }
+        }
+
+        private enum SendMode
+        {
+            text,
+            bytes
         }
     }
 }
