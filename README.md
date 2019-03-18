@@ -1,4 +1,4 @@
-# Mobile Web Control
+# Triangler MWC
 
 Demo Project for [Unity WebRTC Control](https://github.com/kaufi07/unity-webrtc-control)
 
@@ -10,4 +10,4 @@ Demo Project for [Unity WebRTC Control](https://github.com/kaufi07/unity-webrtc-
 
 ## Instructions
 
-If you just want to try out without firing up Unity and building the up, just download the Mobile-Web-Control.zip which includes a prebuilt version for windows.
+If you just want to try out without firing up Unity and building the up, just download the Triangler-MWC_build.zip which includes a prebuilt version for Windows.
