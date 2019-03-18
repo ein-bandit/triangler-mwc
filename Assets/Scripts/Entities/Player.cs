@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UnityWebRtCControl.Network.Data;
+using UnityWebRTCCOntrol.Network.Data;
 
 public class Player : PlayerMovement, IPlayer
 {

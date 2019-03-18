@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityWebRtCControl.Network;
-using UnityWebRtCControl.Network.Data;
+using UnityWebRTCCOntrol.Network;
+using UnityWebRTCCOntrol.Network.Data;
 
 public class PlayerManager : MonoBehaviour
 {

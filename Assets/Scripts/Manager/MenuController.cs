@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityWebRTCCOntrol.QRCode;
 
 public class MenuController : MonoBehaviour
 {
@@ -10,20 +11,21 @@ public class MenuController : MonoBehaviour
 
     private Text gameCountdownText;
 
-    // Start is called before the first frame update
     void Start()
     {
         playersCountText = FindObjectOfType<Canvas>().transform.Find("PlayersCount").GetComponent<Text>();
         gameCountdownText = FindObjectOfType<Canvas>().transform.Find("GameCountdown").GetComponent<Text>();
         gameCountdownText.gameObject.SetActive(false);
         playersCountText.text = "0";
+
+        FindObjectOfType<QRCodeGenerator>().GenerateQRCode();
     }
 
     private void Update()
     {
         if (Input.GetKeyUp(KeyCode.Space))
         {
-            Debug.Log("force game countdown");
+            Debug.Log("Forcing Game Countdown.");
             GameManager.instance.ForceGameStartCountdown();
         }
     }
