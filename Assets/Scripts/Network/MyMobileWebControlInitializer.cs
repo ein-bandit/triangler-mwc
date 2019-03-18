@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MobileWebControl;
 using UnityEngine;
 
-public class MyMobileWebControlInitializer : MobileWebControlInitializer
+public class MyMobileWebControlInitializer : AbstractMobileWebControlInitializer
 {
     private void Start()
     {

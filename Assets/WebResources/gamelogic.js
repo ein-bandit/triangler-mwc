@@ -161,7 +161,7 @@ const guiHelper = {
     }, 300);
 
     var webRTCMessageCallbacks = initializeWebRTCMessageCallbacks();
-    mobileWebControl.connectClient(webRTCMessageCallbacks);
+    mobileWebControl.initializeConnection(webRTCMessageCallbacks);
 
     function initializeWebRTCMessageCallbacks() {
       //overriding client actions from mobile web control.

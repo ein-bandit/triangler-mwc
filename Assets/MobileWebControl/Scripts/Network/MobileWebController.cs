@@ -47,15 +47,24 @@ namespace MobileWebControl.Network
             }
         }
 
-        private bool isAlive = true;
+        private bool isAlive = false;
 
         public void Initialize(IWebServer httpServer,
                                 IWebRTCServer webRTCServer,
                                 INetworkDataInterpreter networkDataInterpreter)
         {
+
+            if (isAlive)
+            {
+                Debug.LogError("MobileWebControl was already set up. Aborting initialization.");
+                return;
+            };
+
             this.webServer = httpServer;
             this.webRTCServer = webRTCServer;
             this.interpreter = networkDataInterpreter;
+
+            isAlive = true;
         }
 
         public void OnReceiveData(IComparable identifier, string message)
