@@ -3,6 +3,7 @@
 /[Oo]bj/
 /[Bb]uild/
 /[Bb]uilds/
+/[Ll]ogs/
 /.vs/*
 /.vscode/*
 
@@ -29,3 +30,6 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+#allow dll libraries
+!*.dll
