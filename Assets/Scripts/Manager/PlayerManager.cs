@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using MobileWebControl.Network;
-using MobileWebControl.Network.Data;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityWebRtCControl.Network;
+using UnityWebRtCControl.Network.Data;
 
 public class PlayerManager : MonoBehaviour
 {
@@ -116,13 +116,13 @@ public class PlayerManager : MonoBehaviour
     {
         foreach (Guid player in playerToGuid.GetKeys())
         {
-            MobileWebController.Instance.SendMessageToClient(player, OutputDataType.command, data);
+            UWCController.Instance.SendMessageToClient(player, OutputDataType.command, data);
         }
     }
 
     public void SendMessageToClient(Player player, PlayerClientAction data)
     {
-        MobileWebController.Instance.SendMessageToClient(
+        UWCController.Instance.SendMessageToClient(
             playerToGuid.Reverse[player],
             OutputDataType.command,
             Enum.GetName(typeof(PlayerClientAction), data)
@@ -131,7 +131,7 @@ public class PlayerManager : MonoBehaviour
 
     private void SendCustomMessageToClient(Player player, string data)
     {
-        MobileWebController.Instance.SendMessageToClient(
+        UWCController.Instance.SendMessageToClient(
             playerToGuid.Reverse[player],
             OutputDataType.command,
             data
@@ -289,7 +289,7 @@ public class PlayerManager : MonoBehaviour
     {
         //wait for end of frame does crash unity (thread concurrency problem when just received message?)
         yield return new WaitForSeconds(delay);
-        MobileWebController.Instance.SendMessageToClient(
+        UWCController.Instance.SendMessageToClient(
             playerGuid,
             OutputDataType.change_state,
             Enum.GetName(typeof(PlayerStatus), status)

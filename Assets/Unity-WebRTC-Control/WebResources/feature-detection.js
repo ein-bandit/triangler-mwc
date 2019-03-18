@@ -28,7 +28,7 @@ var features = {
       }, 250);
 
       if (!evt.target.classList.contains("disabled")) {
-        mobileWebControl.sendFunction({ type: "tap", data: evt.target.id });
+        uwc.sendFunction({ type: "tap", data: evt.target.id });
       }
     }
   },
@@ -54,7 +54,7 @@ var features = {
         c: Math.floor(evt.gamma)
       };
       if (data != features.deviceOrientation.lastData) {
-        mobileWebControl.sendFunction({
+        uwc.sendFunction({
           type: "orientation",
           data: data
         });
@@ -72,7 +72,7 @@ var features = {
       );
     },
     listenerFunction: function(evt) {
-      mobileWebControl.sendFunction({ type: "proximity", data: evt.value > 0 });
+      uwc.sendFunction({ type: "proximity", data: evt.value > 0 });
     }
   },
   deviceMotion: {
@@ -96,7 +96,7 @@ var features = {
           JSON.stringify({ x: evt.rotationRate.alpha });
       }
       //}
-      //mobileWebControl.sendFunction({type:'motion', data: evt.value > 0}));
+      //uwc.sendFunction({type:'motion', data: evt.value > 0}));
     }
   },
   deviceLight: {
@@ -109,7 +109,7 @@ var features = {
       );
     },
     listenerFunction: function(evt) {
-      mobileWebControl.sendFunction({ type: "lightsensor", data: evt.value });
+      uwc.sendFunction({ type: "lightsensor", data: evt.value });
     }
   }
 };

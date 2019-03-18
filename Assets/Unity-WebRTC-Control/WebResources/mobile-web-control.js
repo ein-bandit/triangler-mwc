@@ -15,7 +15,7 @@ var clientActions = {
   onClose: function() {}
 };
 
-var mobileWebControl = {
+var uwc = {
   initializeConnection: function(overridenClientActions) {
     clientActions = overridenClientActions;
     if (!connecting) {

@@ -4,9 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using UnityToolbag;
-using MobileWebControl.Network.Data;
+using UnityWebRtCControl.Network.Data;
 
-namespace MobileWebControl.Network
+namespace UnityWebRtCControl.Network
 {
     public class NetworkEventDispatcher
     {

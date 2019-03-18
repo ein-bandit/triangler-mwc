@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
-using MobileWebControl.Network.WebServer;
-using MobileWebControl.Network.WebRTC;
-using MobileWebControl.Network.Data;
+using UnityWebRtCControl.Network.Data;
+using UnityWebRtCControl.Network.WebServer;
+using UnityWebRtCControl.Network.WebRTC;
 
-namespace MobileWebControl.Network
+namespace UnityWebRtCControl.Network
 {
 
     //is unitys interface to actions on other threads (webserver, webrtcserver).
@@ -17,7 +17,7 @@ namespace MobileWebControl.Network
     //put this script on a gameobject that is a singleton ie. has a class as singleton already.
     //starts the server (which is on another thread) and registers callbacks.
     //therefore events are collected and distributed in next update.
-    public class MobileWebController
+    public class UWCController
     {
         public string webServerAddress
         {
@@ -34,14 +34,14 @@ namespace MobileWebControl.Network
         private IWebServer webServer;
 
 
-        private static MobileWebController instance;
-        public static MobileWebController Instance
+        private static UWCController instance;
+        public static UWCController Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    instance = new MobileWebController();
+                    instance = new UWCController();
                 }
                 return instance;
             }
@@ -56,7 +56,7 @@ namespace MobileWebControl.Network
 
             if (isAlive)
             {
-                Debug.LogError("MobileWebControl was already set up. Aborting initialization.");
+                Debug.LogError("UnityWebRtCControl was already set up. Aborting initialization.");
                 return;
             };
 

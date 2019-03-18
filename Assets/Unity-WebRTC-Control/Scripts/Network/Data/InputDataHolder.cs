@@ -1,6 +1,6 @@
 using System;
 
-namespace MobileWebControl.Network.Data
+namespace UnityWebRtCControl.Network.Data
 {
     public class InputDataHolder
     {

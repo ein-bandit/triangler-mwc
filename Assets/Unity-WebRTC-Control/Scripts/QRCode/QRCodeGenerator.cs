@@ -1,12 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using MobileWebControl.Network;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityWebRtCControl.Network;
 using ZXing;
 using ZXing.QrCode;
 
-namespace MobileWebControl.QRCode
+namespace UnityWebRtCControl.QRCode
 {
     public class QRCodeGenerator : MonoBehaviour
     {
@@ -25,13 +25,13 @@ namespace MobileWebControl.QRCode
                 }
                 if (qRCodeArea.GetComponentInChildren<Text>())
                 {
-                    qRCodeArea.GetComponentInChildren<Text>().text = MobileWebController.Instance.webServerAddress;
+                    qRCodeArea.GetComponentInChildren<Text>().text = UWCController.Instance.webServerAddress;
                 }
             }
         }
         public Texture2D GenerateQRCode()
         {
-            return GenerateQRCode(MobileWebController.Instance.webServerAddress);
+            return GenerateQRCode(UWCController.Instance.webServerAddress);
         }
 
         public Texture2D GenerateQRCode(string address)

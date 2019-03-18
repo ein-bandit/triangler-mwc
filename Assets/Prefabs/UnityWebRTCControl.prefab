@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3580526229165410536}
-  - component: {fileID: 3580526229165410539}
-  - component: {fileID: 3580526229165410538}
+  - component: {fileID: 8534443718744538953}
+  - component: {fileID: 850564475600132965}
   m_Layer: 0
-  m_Name: MobileWebControl
+  m_Name: UnityWebRTCControl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3580526229165410539
+--- !u!114 &8534443718744538953
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeac7e6753ff9984dba4625d5b0a3550, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3580526229165410538
+--- !u!114 &850564475600132965
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MobileWebControl.Network.WebRTC
+namespace UnityWebRtCControl.Network.WebRTC
 {
     public interface IWebRTCServer
     {

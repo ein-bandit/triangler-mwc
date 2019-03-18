@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using MobileWebControl.Network.Data;
 using UnityEngine;
 using Random = UnityEngine.Random;
 

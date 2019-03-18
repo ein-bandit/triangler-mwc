@@ -8,11 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Fleck;
 using LitJson;
-using MobileWebControl.Network;
 using System.Text;
 using UnityEngine;
 
-namespace MobileWebControl.Network.WebRTC
+namespace UnityWebRtCControl.Network.WebRTC
 {
     //from WebRTC.net-Staging project
     [Serializable]
@@ -97,7 +96,7 @@ namespace MobileWebControl.Network.WebRTC
 
         private void OnDisconnect(IWebSocketConnection context)
         {
-            MobileWebController.Instance.OnUnregisterClient(context.ConnectionInfo.Id);
+            UWCController.Instance.OnUnregisterClient(context.ConnectionInfo.Id);
 
             UserList.TryRemove(context.ConnectionInfo.Id, out IWebSocketConnection ctx);
 
@@ -123,7 +122,7 @@ namespace MobileWebControl.Network.WebRTC
                     {
                         if (!Streams.ContainsKey(context.ConnectionInfo.Id))
                         {
-                            MobileWebController.Instance.OnRegisterClient(context.ConnectionInfo.Id);
+                            UWCController.Instance.OnRegisterClient(context.ConnectionInfo.Id);
 
                             WebRtcSession session = Streams[context.ConnectionInfo.Id] = new WebRtcSession();
 
@@ -226,12 +225,12 @@ namespace MobileWebControl.Network.WebRTC
 
             session.WebRtc.OnDataMessage += delegate (string dmsg)
             {
-                MobileWebController.Instance.OnReceiveData(context.ConnectionInfo.Id, dmsg);
+                UWCController.Instance.OnReceiveData(context.ConnectionInfo.Id, dmsg);
             };
 
             session.WebRtc.OnDataBinaryMessage += delegate (byte[] dmsg)
             {
-                MobileWebController.Instance.OnReceiveData(
+                UWCController.Instance.OnReceiveData(
                     context.ConnectionInfo.Id,
                     ConvertByteArrayToString(dmsg)
                     );

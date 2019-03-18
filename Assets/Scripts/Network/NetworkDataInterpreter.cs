@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using LitJson;
-using MobileWebControl.Network.Data;
 using UnityEngine;
 using UnityToolbag;
+using UnityWebRtCControl.Network.Data;
 
 //you can use your own enum types as well, just return the enum element.
 //identifier is Guid for this example (available from library)
-public class MyNetworkDataInterpreter : INetworkDataInterpreter
+public class NetworkDataInterpreter : INetworkDataInterpreter
 {
     private struct InputData
     {
@@ -85,7 +85,7 @@ public class MyNetworkDataInterpreter : INetworkDataInterpreter
             return defaultType;
         }
 
-        MySpecialInputData customType;
+        SpecialInputData customType;
         if (Enum.TryParse(type.ToString(), out customType))
         {
             return customType;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MobileWebControl.Network.Data
+namespace UnityWebRtCControl.Network.Data
 {
     public enum InputDataType
     {

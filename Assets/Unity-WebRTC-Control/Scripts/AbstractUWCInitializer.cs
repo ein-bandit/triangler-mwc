@@ -1,28 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using MobileWebControl;
-using MobileWebControl.Network;
-using MobileWebControl.Network.Data;
-using MobileWebControl.Network.WebRTC;
-using MobileWebControl.Network.WebServer;
 using UnityEngine;
+using UnityWebRtCControl.Network;
+using UnityWebRtCControl.Network.Data;
+using UnityWebRtCControl.Network.WebRTC;
+using UnityWebRtCControl.Network.WebServer;
 
-namespace MobileWebControl
+namespace UnityWebRtCControl
 {
-    public abstract class AbstractMobileWebControlInitializer : MonoBehaviour
+    public abstract class AbstractUWCInitializer : MonoBehaviour
     {
         [Header("Default Server Configuration")]
         public int httpServerPort = 8880;
         public string webResourcesFolder;
         public int webRTCServerPort = 7770;
 
-        private readonly string standardResourcesFolder = "MobileWebControl/WebResources";
+        private readonly string standardResourcesFolder = "Unity-WebRTC-Control/WebResources";
 
         private IWebServer webServer;
         private IWebRTCServer webRTCServer;
 
-        private AbstractMobileWebControlInitializer instance = null;
+        private static AbstractUWCInitializer instance = null;
         void Awake()
         {
             if (instance == null)
@@ -36,7 +35,7 @@ namespace MobileWebControl
             }
         }
 
-        protected void InitializeMobileWebControl(
+        protected void InitializeUWC(
             INetworkDataInterpreter networkDataInterpreter,
             IWebServer webserver = null,
             IWebRTCServer webRTCServer = null)
@@ -53,7 +52,7 @@ namespace MobileWebControl
                 webRTCServer = new WebRTCServer(webRTCServerPort);
             }
 
-            MobileWebController.Instance.Initialize(webServer, webRTCServer, networkDataInterpreter);
+            UWCController.Instance.Initialize(webServer, webRTCServer, networkDataInterpreter);
         }
 
         private string GetFullPath(string relativePath)
@@ -63,7 +62,7 @@ namespace MobileWebControl
 
         private void OnApplicationQuit()
         {
-            MobileWebController.Instance.Cleanup();
+            UWCController.Instance.Cleanup();
         }
     }
 }

@@ -145,7 +145,7 @@ const guiHelper = {
 
     //wait a bit to make sure connection is established correctly, maybe not needed.
     setTimeout(() => {
-      mobileWebControl.sendFunction({ type: "ready", data: "ready" }, true);
+      uwc.sendFunction({ type: "ready", data: "ready" }, true);
     }, 1000);
   },
   handleConnectClick: function() {
@@ -161,7 +161,7 @@ const guiHelper = {
     }, 300);
 
     var webRTCMessageCallbacks = initializeWebRTCMessageCallbacks();
-    mobileWebControl.initializeConnection(webRTCMessageCallbacks);
+    uwc.initializeConnection(webRTCMessageCallbacks);
 
     function initializeWebRTCMessageCallbacks() {
       //overriding client actions from mobile web control.

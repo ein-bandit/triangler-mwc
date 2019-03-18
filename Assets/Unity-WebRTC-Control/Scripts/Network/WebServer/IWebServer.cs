@@ -1,4 +1,4 @@
-﻿namespace MobileWebControl.Network.WebServer
+﻿namespace UnityWebRtCControl.Network.WebServer
 {
     public interface IWebServer
     {
