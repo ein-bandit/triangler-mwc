@@ -94,6 +94,7 @@ public class PlayerManager : MonoBehaviour
         //do this after iteration to avoid altering data in foreach.
         if (GameScene.Menu == scene)
         {
+            GameManager.instance.UpdatePlayerCount(playerToGuid.GetKeys().Count);
             SetAIPlayersReady();
         }
     }
@@ -149,12 +150,14 @@ public class PlayerManager : MonoBehaviour
 
         if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
-            GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
+            GameManager.instance.UpdatePlayerCount(playerToGuid.GetKeys().Count);
         }
     }
 
     private IEnumerator SendPlayerColor(Player player)
     {
+        //TODO: exception can occur since we receive and send message in same frame.
+        //find a better way instead of waiting some time to send message. (Player Start or similar)
         yield return new WaitForSeconds(playerReadyDelay);
         SendCustomMessageToClient(player, "color:" + player.GetUIIdentifier(true));
     }
@@ -200,7 +203,7 @@ public class PlayerManager : MonoBehaviour
 
         if (GameManager.instance.GetActiveGameScene() == GameScene.Menu)
         {
-            GameManager.instance.UpdatePlayerCount(playerConstraints.Keys.Count);
+            GameManager.instance.UpdatePlayerCount(playerToGuid.GetKeys().Count);
         }
         else if (GameManager.instance.GetActiveGameScene() == GameScene.Game)
         {
