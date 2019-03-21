@@ -4,7 +4,7 @@ using System.Text;
 using LitJson;
 using UnityEngine;
 using UnityToolbag;
-using UnityWebRTCCOntrol.Network.Data;
+using UnityWebRTCControl.Network.Data;
 
 //you can use your own enum types as well, just return the enum element.
 //identifier is Guid for this example (available from library)

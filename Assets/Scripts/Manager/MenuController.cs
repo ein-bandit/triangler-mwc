@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityWebRTCCOntrol.QRCode;
+using UnityWebRTCControl.QRCode;
 
 public class MenuController : MonoBehaviour
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityWebRTCCOntrol;
+using UnityWebRTCControl;
 
 public class UWCInitializer : AbstractUWCInitializer
 {

@@ -39,7 +39,7 @@
         </div>
       </div>
       <div id="content" class="content data hidden">
-        <div id="data" class="hidden"></div>
+        <div id="debug" class="hidden"></div>
         <div
           id="tap-area-reset_orientation"
           class="tapable-area tap-area-reset_orientation"
@@ -63,15 +63,12 @@
       </div>
     </div>
     <div id="feature-area"></div>
-    <div id="logger"></div>
-    <script src="config.js"></script>
-    <script src="gamelogic.js"></script>
-
-    <script src="NoSleep.js"></script>
-    <script src="adapter.js"></script>
-    <script src="webrtc.js"></script>
-    <script src="ice-services.js"></script>
-    <script src="feature-detection.js"></script>
-    <script src="unity-webrtc-control.js"></script>
+    <div id="logger" class="hidden"></div>
+    <script type="module">
+      import UWC from "./uwc/unity-webrtc-control.js";
+      const uwc = new UWC();
+      //rest of logic is handled in controller-logic.js
+    </script>
+    <script defer src="controller-logic.js"></script>
   </body>
 </html>

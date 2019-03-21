@@ -9,7 +9,7 @@ body {
 .hidden {
   display: none;
 }
-#data {
+#debug {
   position: absolute;
   top: 0;
   width: 100%;
@@ -191,7 +191,6 @@ body {
 
 #logger {
   z-index: 10;
-  display: none;
   width: 100%;
   height: 100px;
   background: lightgray;
@@ -202,7 +201,4 @@ body {
   opacity: 0.75;
   font-size: 0.75em;
   padding: 5px;
-}
-#logger.visible {
-  display: block;
 }
