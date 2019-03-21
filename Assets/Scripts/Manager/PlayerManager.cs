@@ -94,7 +94,6 @@ public class PlayerManager : MonoBehaviour
         //do this after iteration to avoid altering data in foreach.
         if (GameScene.Menu == scene)
         {
-            GameManager.instance.UpdatePlayerCount(playerToGuid.GetKeys().Count);
             SetAIPlayersReady();
         }
     }
