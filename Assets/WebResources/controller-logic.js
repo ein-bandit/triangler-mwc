@@ -181,11 +181,13 @@ if (uwc.config.debug) {
   };
 
   for (var prop in uwc.availableFeatures) {
-    var feature = document.createElement("div");
-    feature.classList.add("detected-feature");
-    var featureMessage = document.createElement("span");
-    featureMessage.innerHTML = messages[prop];
-    feature.appendChild(featureMessage);
-    featureDisplayArea.appendChild(feature);
+    if (uwc.config.features[prop] && uwc.config.features[prop] !== false) {
+      var feature = document.createElement("div");
+      feature.classList.add("detected-feature");
+      var featureMessage = document.createElement("span");
+      featureMessage.innerHTML = messages[prop];
+      feature.appendChild(featureMessage);
+      featureDisplayArea.appendChild(feature);
+    }
   }
 }
