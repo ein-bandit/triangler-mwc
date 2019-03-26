@@ -267,7 +267,6 @@ namespace UnityWebRTCControl.Network.WebRTC
 
         private byte[] ConvertStringToByteArray(string data)
         {
-            //TODO: change this to Blob.
             return Encoding.UTF8.GetBytes(data);
         }
 
