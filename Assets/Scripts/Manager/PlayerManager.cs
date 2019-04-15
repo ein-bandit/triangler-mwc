@@ -31,7 +31,7 @@ public class PlayerManager : MonoBehaviour
         if (playerConstraints.Count > 0)
         {
             //set players ready and advance.
-            foreach (Player p in playerConstraints.Keys)
+            foreach (Player p in playerToGuid.GetValues())
             {
                 SetPlayerReady(p);
             }

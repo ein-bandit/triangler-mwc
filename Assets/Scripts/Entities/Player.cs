@@ -12,6 +12,7 @@ public class Player : PlayerMovement, IPlayer
     public float playerDeathResetDelay = .15f;
     public float projectileResetDelay = 1f;
 
+    public bool activateLogging = false;
 
     private Renderer _renderer;
     private Renderer _noseRenderer;
@@ -62,6 +63,10 @@ public class Player : PlayerMovement, IPlayer
         switch (type)
         {
             case InputDataType.orientation:
+                if (activateLogging)
+                {
+                    Debug.Log($"device orientation {gameObject.name}, {(Vector3)inputData}");
+                }
                 if (sinInitialRotation == float.MinValue)
                 {
                     Debug.Log("calculating new initial pos");

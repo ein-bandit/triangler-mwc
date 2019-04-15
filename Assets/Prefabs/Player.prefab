@@ -125,14 +125,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b10ff786fa32c214889f45fb4e5dced5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speedForce: 10
-  rotationSpeed: 20
+  speedForce: 12
+  rotationSpeed: 12
   boostForce: 15
   reactivateBoostTime: 2
   activateStealthDelay: 10
   stealthActiveTime: 2
   playerDeathResetDelay: 0.15
   projectileResetDelay: 1
+  activateLogging: 0
 --- !u!33 &8665563993015745940
 MeshFilter:
   m_ObjectHideFlags: 0
