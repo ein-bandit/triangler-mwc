@@ -33,3 +33,6 @@ sysinfo.txt
 
 #allow dll libraries
 !*.dll
+
+#Cloned plugins
+/Assets/Unity-WebRTC-Control/*
